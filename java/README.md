@@ -1,0 +1,1 @@
+# waas java examples
