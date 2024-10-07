@@ -136,8 +136,8 @@ def main():
     print(secure_channel)
 
     # Secure Channel 검증
-    varify_result = verify_secure_channel(secure_channel)
-    print(f"Secure Channel varify result: {varify_result}")
+    verify_result = verify_secure_channel(secure_channel)
+    print(f"Secure Channel verify result: {verify_result}")
 
     # Secure Channel 을 사용한 메시지 암복호화
     message = "hello, waas"

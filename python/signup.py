@@ -144,7 +144,7 @@ def send_password_reset_code(email: str, lang: Literal["ko", "en", "ja"] = "en")
     send_code(email, lang, "initpassword")
 
 
-def vefify_code(email: str, code: str) -> bool:
+def verify_code(email: str, code: str) -> bool:
     """
     사용자가 입력한 코드가 올바른지 확인합니다.
 
@@ -203,7 +203,7 @@ def main():
 
     # 사용자가 입력한 인증 코드가 올바른지 확인합니다.
     # 인증코드를 발송한 다음 사용자로부터 verification_code 를 입력 받습니다.
-    if not vefify_code(email, verification_code):
+    if not verify_code(email, verification_code):
         print("Invalid code")
         return
 
