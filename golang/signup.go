@@ -255,7 +255,7 @@ func verifyCode(email, code string) bool {
 	return resp.StatusCode == http.StatusOK
 }
 
-func SignupSenario() {
+func SignupScenario() {
 	email := "email"                        // 사용자 이메일
 	password := "password"                  // 사용자 비밀번호
 	clientID := "Client ID"                 // 발급받은 Client ID
