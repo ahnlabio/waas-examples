@@ -47,13 +47,13 @@ func isExistUser(email string) bool {
 
 	url := fmt.Sprintf("%s/member/user-management/users/%s?serviceid=https://mw.myabcwallet.com", getBaseURL(), email)
 
-	res, err := http.Get(url)
+	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	return res.StatusCode != http.StatusOK
+	return resp.StatusCode != http.StatusOK
 }
 
 type registerRequest struct {
@@ -65,7 +65,7 @@ type registerRequest struct {
 	Collect    int    `json:"collect"`
 	ThirdParty int    `json:"third_party"`
 	Advertise  int    `json:"advertise"`
-	Serviceid  string `json:"serviceid"`
+	ServiceID  string `json:"serviceid"`
 }
 
 func register_email_user(email, encryptedPassword, vrificationCode, channelID, auth string, overage, agree, collect, thirdParty, advertise int) {
@@ -97,7 +97,7 @@ func register_email_user(email, encryptedPassword, vrificationCode, channelID, a
 		Collect:    collect,
 		ThirdParty: thirdParty,
 		Advertise:  advertise,
-		Serviceid:  "https://mw.myabcwallet.com",
+		ServiceID:  "https://mw.myabcwallet.com",
 	}
 
 	jsonData, err := json.Marshal(data)
@@ -132,7 +132,7 @@ func register_email_user(email, encryptedPassword, vrificationCode, channelID, a
 type verifyCodeType string
 
 const (
-	verifyCode         verifyCodeType = "verify"
+	authCode           verifyCodeType = "verify"
 	changePasswordCode verifyCodeType = "changepassword"
 	initPasswordCode   verifyCodeType = "initpassword"
 )
@@ -151,7 +151,7 @@ func sendVerificationCode(email, lang string) {
 	       HTTPError: 요청이 실패한 경우.
 
 	*/
-	sendCode(email, lang, verifyCode)
+	sendCode(email, lang, authCode)
 }
 
 func sendChangePasswordCode(email, lang string) {
@@ -210,4 +210,46 @@ func sendCode(email, lang string, template verifyCodeType) {
 	if resp.StatusCode != http.StatusOK {
 		log.Fatal()
 	}
+}
+
+type verifyCodeRequest struct {
+	Code      string `json:"code"`
+	ServiceID string `json:"serviceid"`
+}
+
+func verifyCode(email, code string) bool {
+	/*
+	   사용자가 입력한 코드가 올바른지 확인합니다.
+
+	   send_verification_code, send_auth_code, send_password_reset_code 함수로 전송된 코드를 확인합니다.
+
+	   Args:
+	       email (str): 사용자 이메일 주소.
+	       code (str): 사용자가 입력한 코드.
+
+	   Returns:
+	       bool: 사용자가 입력한 코드가 올바른 경우 True, 그렇지 않은 경우 False.
+
+	   Raises:
+	       HTTPError: 요청이 실패한 경우.
+	*/
+
+	url := fmt.Sprintf("%s/member/mail-service/%s/verifycode", getBaseURL(), email)
+	data := verifyCodeRequest{
+		Code:      code,
+		ServiceID: "https://mw.myabcwallet.com",
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		log.Fatal()
+	}
+
+	resp, err := http.Post(url, "application/x-www-form-urlencoded", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Fatal()
+	}
+	defer resp.Body.Close()
+
+	return resp.StatusCode == http.StatusOK
 }
