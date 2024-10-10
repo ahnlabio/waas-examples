@@ -1,5 +1,7 @@
 package main
 
+// signup.go - WAAS 회원 가입 API 사용 예제
+
 import (
 	"bytes"
 	"encoding/base64"
