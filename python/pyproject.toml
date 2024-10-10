@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "waas-examples-python"
+version = "0.1.0"
+description = ""
+authors = ["Ben <ben@ahnlab.io>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.32.3"
+pycryptodome = "^3.20.0"
+ecdsa = "^0.19.0"
+python-dotenv = "^1.0.1"
+pyjwt = "^2.9.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
