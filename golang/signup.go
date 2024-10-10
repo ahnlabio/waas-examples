@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -68,7 +69,7 @@ type registerRequest struct {
 	ServiceID  string `json:"serviceid"`
 }
 
-func register_email_user(email, encryptedPassword, vrificationCode, channelID, auth string, overage, agree, collect, thirdParty, advertise int) {
+func registerEmailUser(email, encryptedPassword, vrificationCode, channelID, auth string, overage, agree, collect, thirdParty, advertise int) {
 	/*
 	   회원 가입
 
@@ -253,3 +254,58 @@ func verifyCode(email, code string) bool {
 
 	return resp.StatusCode == http.StatusOK
 }
+
+func SignupSenario() {
+	email := "email"                        // 사용자 이메일
+	password := "password"                  // 사용자 비밀번호
+	clientID := "Client ID"                 // 발급받은 Client ID
+	clientSecret := "Client Secret"         // 발급받은 Client Secret
+	verificationCode := "verification code" // 사용자가 입력한 인증 코드
+
+	// 이미 가입된 사용자인지 확인합니다.
+	if isExistUser(email) {
+		fmt.Sprintf("%s is already exist user", email)
+	}
+
+	fmt.Sprintf("%s is not exist", email)
+
+	// 이메일로 인증 코드를 전송합니다.
+	sendVerificationCode(email, "en")
+	fmt.Println("verification code sent")
+
+	// 사용자가 입력한 인증 코드가 올바른지 확인합니다.
+	// 인증코드를 발송한 다음 사용자로부터 verification_code 를 입력 받습니다.
+	if !verifyCode(email, verificationCode) {
+		fmt.Println("Invalid code")
+		return
+	}
+
+	/* secure channel 부분 구현 필요
+		// 사용자의 비밀번호를 암호화합니다.
+	    secure_channel = securechannel.create_secure_channel()
+	    encrypted_password = securechannel.encrypt(secure_channel, password)
+	*/
+
+	// 사용자의 동의를 받습니다.
+	overage := 1
+	agree := 1
+	collect := 1
+	thirdParty := 1
+	advertise := 1
+
+	// Client ID / Client Secret
+	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret)))
+
+	// 사용자를 등록합니다
+	registerEmailUser(email, password, verificationCode, "", auth, overage, agree, collect, thirdParty, advertise)
+	fmt.Println("success signup")
+
+	existResult := isExistUser(email)
+	fmt.Sprintf("%s is exist: %b", email, existResult)
+}
+
+/*
+1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
+2.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
+3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
+*/
