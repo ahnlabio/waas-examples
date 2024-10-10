@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -117,6 +118,30 @@ func register_email_user(email, encryptedPassword, vrificationCode, channelID, a
 	// HTTP 클라이언트 생성 및 요청 전송
 	client := &http.Client{}
 	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal()
+	}
+	defer resp.Body.Close()
+
+	// 성공이 아닐 경우 예외처리
+	if resp.StatusCode != http.StatusOK {
+		log.Fatal()
+	}
+}
+
+func sendCode(email, lang, template string) {
+	url, err := url.Parse(fmt.Sprintf("%s/member/mail-service/%s/sendcode", getBaseURL(), email))
+	if err != nil {
+		log.Fatal()
+	}
+
+	q := url.Query()
+	q.Add("lang", lang)
+	q.Add("template", template)
+
+	url.RawQuery = q.Encode()
+
+	resp, err := http.Get(url.String())
 	if err != nil {
 		log.Fatal()
 	}
