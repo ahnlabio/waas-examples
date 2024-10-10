@@ -129,7 +129,66 @@ func register_email_user(email, encryptedPassword, vrificationCode, channelID, a
 	}
 }
 
-func sendCode(email, lang, template string) {
+type verifyCodeType string
+
+const (
+	verifyCode         verifyCodeType = "verify"
+	changePasswordCode verifyCodeType = "changepassword"
+	initPasswordCode   verifyCodeType = "initpassword"
+)
+
+func sendVerificationCode(email, lang string) {
+	/*
+	   사용자 이메일로 인증 코드를 전송합니다.
+
+	   성공하면 함수는 오류 없이 종료
+
+	   Args:
+	       email (str): 인증 코드를 전송할 사용자의 이메일 주소.
+	       lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
+
+	   Raises:
+	       HTTPError: 요청이 실패한 경우.
+
+	*/
+	sendCode(email, lang, verifyCode)
+}
+
+func sendChangePasswordCode(email, lang string) {
+	/*
+	   사용자 이메일로 패스워드 변경 인증 코드를 전송합니다.
+
+	   성공하면 함수는 오류 없이 종료
+
+	   Args:
+	       email (str): 인증 코드를 전송할 사용자의 이메일 주소.
+	       lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
+
+	   Raises:
+	       HTTPError: 요청이 실패한 경우.
+	*/
+
+	sendCode(email, lang, changePasswordCode)
+}
+
+func sendResetPasswordCode(email, lang string) {
+	/*
+	   사용자 이메일로 패스워드 초기화 인증 코드를 전송합니다.
+
+	   성공하면 함수는 오류 없이 종료
+
+	   Args:
+	       email (str): 인증 코드를 전송할 사용자의 이메일 주소.
+	       lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
+
+	   Raises:
+	       HTTPError: 요청이 실패한 경우.
+	*/
+
+	sendCode(email, lang, initPasswordCode)
+}
+
+func sendCode(email, lang string, template verifyCodeType) {
 	url, err := url.Parse(fmt.Sprintf("%s/member/mail-service/%s/sendcode", getBaseURL(), email))
 	if err != nil {
 		log.Fatal()
@@ -137,7 +196,7 @@ func sendCode(email, lang, template string) {
 
 	q := url.Query()
 	q.Add("lang", lang)
-	q.Add("template", template)
+	q.Add("template", string(template))
 
 	url.RawQuery = q.Encode()
 
