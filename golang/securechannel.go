@@ -5,16 +5,15 @@ package main
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/big"
 	"net/http"
 	"net/url"
 	"os"
@@ -137,7 +136,6 @@ func createKeypair() KeyPair {
 }
 
 func verifySecureChannel(secureChannel SecureChannel) bool {
-	fmt.Println(secureChannel)
 	decryptedMessage := decrypt(secureChannel, secureChannel.Encrypted)
 	return secureChannel.Message == decryptedMessage
 }
@@ -175,18 +173,14 @@ func getAESCipher(privateKeyStr, publicKeyStr string) (cipher.Block, []byte) {
 	privateKeyBytes, _ := hex.DecodeString(privateKeyStr)
 	publicKeyBytes, _ := hex.DecodeString(publicKeyStr)
 
-	privateKey := new(ecdsa.PrivateKey)
-	privateKey.PublicKey.Curve = elliptic.P256()
-	privateKey.D = new(big.Int).SetBytes(privateKeyBytes)
-	privateKey.PublicKey.X, privateKey.PublicKey.Y = elliptic.Unmarshal(elliptic.P256(), publicKeyBytes)
+	privateKey, _ := ecdh.P256().NewPrivateKey(privateKeyBytes)
+	publicKey, _ := ecdh.P256().NewPublicKey(publicKeyBytes)
 
-	publicKey := privateKey.PublicKey
+	sharedSecret, _ := privateKey.ECDH(publicKey)
 
-	sharedSecret, _ := privateKey.PublicKey.ScalarMult(publicKey.X, publicKey.Y, privateKey.D.Bytes())
-	hash := sha256.Sum256(sharedSecret.Bytes())
+	key := sharedSecret[0:16]
+	iv := sharedSecret[16:32]
 
-	key := hash[0:16]
-	iv := hash[16:32]
 	block, _ := aes.NewCipher(key)
 	return block, iv
 }
@@ -194,23 +188,17 @@ func getAESCipher(privateKeyStr, publicKeyStr string) (cipher.Block, []byte) {
 func secureChannelScenario() {
 	// Secure channel 생성
 	secureChannel := createSecureChannel()
-	fmt.Println("생성된 secure channel 객체 : ", secureChannel)
 
 	// Secure Channel 검증
 	verifyResult := verifySecureChannel(secureChannel)
-	fmt.Printf("Secure Channel verify result: %v\n", verifyResult)
+	fmt.Printf("Secure Channel verify result: %v\n", verifyResult) // true 예상
 
 	// Secure Channel 을 사용한 메시지 암복호화
 	// message := "hello, waas"
 	encryptedMessage := encrypt(secureChannel, secureChannel.Message)
 	decryptedMessage := decrypt(secureChannel, encryptedMessage)
 
-	fmt.Printf("message encrypt result: %v\n", (secureChannel.Message == decryptedMessage))
-	fmt.Println(secureChannel.Message, encryptedMessage, decryptedMessage)
-	fmt.Println("public key : ", secureChannel.ServerPublicKey)
-	fmt.Println("private key : ", secureChannel.PrivateKey)
-	fmt.Println("encryptedMessage : ", encryptedMessage)
-	fmt.Println("hello worrrrr")
+	fmt.Printf("message encrypt result: %v\n", (secureChannel.Message == decryptedMessage)) // true 예상
 }
 
 /*
