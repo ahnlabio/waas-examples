@@ -6,8 +6,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/ecdh"
-	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
@@ -47,8 +45,8 @@ type SecureChannel struct {
 }
 
 type KeyPair struct {
-	PrivateKey *ecdsa.PrivateKey
-	PublicKey  *ecdsa.PublicKey
+	PrivateKey *ecdh.PrivateKey
+	PublicKey  *ecdh.PublicKey
 }
 
 type CreateSecureChannelResponse struct {
@@ -80,11 +78,8 @@ func createSecureChannel() SecureChannel {
 	*/
 
 	keyPair := createKeypair()
-	// 공개 키를 바이트 배열로 변환
-	publicKeyBytes := elliptic.Marshal(elliptic.P256(), keyPair.PublicKey.X, keyPair.PublicKey.Y)
-
 	// 바이트 배열을 16진수 문자열로 인코딩
-	publicKeyStr := hex.EncodeToString(publicKeyBytes)
+	publicKeyStr := hex.EncodeToString(keyPair.PublicKey.Bytes())
 	secureChannelMessage := "ahnlabblockchaincompany" // (1)
 
 	// 전송할 form 데이터 생성
@@ -110,11 +105,8 @@ func createSecureChannel() SecureChannel {
 		log.Fatal("fail to decode resp", err)
 	}
 
-	// 개인 키를 바이트 배열로 변환
-	privateKeyBytes := keyPair.PrivateKey.D.Bytes()
-
 	// 바이트 배열을 16진수 문자열로 인코딩
-	privateKeyStr := hex.EncodeToString(privateKeyBytes)
+	privateKeyStr := hex.EncodeToString(keyPair.PrivateKey.Bytes())
 
 	return SecureChannel{
 		ChannelID:       result.ChannelID,
@@ -126,11 +118,10 @@ func createSecureChannel() SecureChannel {
 }
 
 func createKeypair() KeyPair {
-	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	publicKey := &privateKey.PublicKey
+	privateKey, _ := ecdh.P256().GenerateKey(rand.Reader)
 	return KeyPair{
 		PrivateKey: privateKey,
-		PublicKey:  publicKey,
+		PublicKey:  privateKey.PublicKey(),
 	}
 }
 
