@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -16,6 +17,7 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -88,32 +90,29 @@ func createSecureChannel(secureChannelMessage string) SecureChannel {
 
 	// 바이트 배열을 16진수 문자열로 인코딩
 	publicKeyStr := hex.EncodeToString(publicKeyBytes)
-	publicKey := fmt.Sprintf("04%s", publicKeyStr)   // 04 접두사는 공개 키가 압축되지 않았음을 나타냄.
-	secureChannelMessage = "ahnlabblockchaincompany" // (1)
+	secureChannelMessage = "conanTestGolang" // (1)
 
-	url := fmt.Sprintf("%s/secure/channel/create", getBaseURL())
-	data := createSecureChannelRequest{
-		PublicKey: publicKey,
-		Plain:     secureChannelMessage,
+	// 전송할 form 데이터 생성
+	formData := url.Values{
+		"pubkey": {publicKeyStr},
+		"plain":  {secureChannelMessage},
 	}
 
-	jsonData, err := json.Marshal(data)
+	urlStr := fmt.Sprintf("%s/secure/channel/create", getBaseURL())
+	// HTTP POST 요청 보내기
+	resp, err := http.PostForm(urlStr, formData)
 	if err != nil {
-		log.Fatal()
+		log.Fatalf("PostForm error: %v", err)
 	}
-
-	resp, err := http.Post(url, "application/x-www-form-urlencoded", bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Fatal()
-	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Fatal()
+		log.Fatal("fail to create channel request resp.StatusCode != http.StatusOK", resp.StatusCode, resp)
 	}
 
 	var result CreateSecureChannelResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		log.Fatal()
+		log.Fatal("fail to decode resp", err)
 	}
 
 	// 개인 키를 바이트 배열로 변환
@@ -155,7 +154,7 @@ func decrypt(secureChannel SecureChannel, encryptedMessage string) string {
 
 	encMsg, err := base64.StdEncoding.DecodeString(encryptedMessage)
 	if err != nil {
-		log.Fatal()
+		log.Fatal("fail to decode message", err)
 	}
 
 	iv := encMsg[:aes.BlockSize]
@@ -167,7 +166,7 @@ func decrypt(secureChannel SecureChannel, encryptedMessage string) string {
 
 	unpaddedMsg, err := pkcs7Unpad(decrypted, aes.BlockSize)
 	if err != nil {
-		log.Fatal()
+		log.Fatal("fail to unpad ", err, aes.BlockSize, decrypted, ciphertext, encMsg)
 	}
 
 	return string(unpaddedMsg)
@@ -207,9 +206,11 @@ func getAESCipher(privateKey, publicKey string) cipher.Block {
 		log.Fatalf("Error generating shared secret: %v", err)
 	}
 
+	ecdh.P256().GenerateKey()
+
 	// AES 키와 IV 생성
 	aesKey := secret[:16]
-
+	aes.NewCipher()
 	// AES 암호화 블록 생성
 	block, err := aes.NewCipher(aesKey)
 	if err != nil {
@@ -235,7 +236,7 @@ func pkcs7Pad(data []byte, blockSize int) []byte {
 func pkcs7Unpad(data []byte, blockSize int) ([]byte, error) {
 	length := len(data)
 	if length == 0 {
-		return nil, fmt.Errorf("invalid padding size")
+		return nil, fmt.Errorf("invalid padding data size")
 	}
 	padding := int(data[length-1])
 	if padding > blockSize || padding == 0 {
@@ -249,7 +250,7 @@ func secureChannelScenario() {
 
 	// Secure channel 생성
 	secureChannel := createSecureChannel(secureChannelMSG)
-	fmt.Println(secureChannel)
+	fmt.Println("생성된 secure channel 객체 : ", secureChannel)
 
 	// Secure Channel 검증
 	verifyResult := verifySecureChannel(secureChannel)
@@ -261,6 +262,7 @@ func secureChannelScenario() {
 	decryptedMessage := decrypt(secureChannel, encryptedMessage)
 
 	fmt.Printf("message encrypt result: %v", (encryptedMessage == decryptedMessage))
+	fmt.Print("hello worrrrr")
 }
 
 /*
