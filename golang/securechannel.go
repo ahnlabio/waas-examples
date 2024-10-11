@@ -153,7 +153,6 @@ func encrypt(secureChannel SecureChannel, message string) string {
 
 	encrypter := cipher.NewCBCEncrypter(block, iv)
 	encrypter.CryptBlocks(encMsg, paddedMsg)
-	// cipher.Encrypt(encMsg, paddedMsg)
 	return base64.StdEncoding.EncodeToString(encMsg)
 }
 
@@ -162,7 +161,6 @@ func decrypt(secureChannel SecureChannel, encryptedMessage string) string {
 
 	encMsg, _ := base64.StdEncoding.DecodeString(encryptedMessage)
 	decryptedMsg := make([]byte, len(encMsg))
-	// cipher.Decrypt(decryptedMsg, encMsg)
 	decrypter := cipher.NewCBCDecrypter(block, iv)
 	decrypter.CryptBlocks(decryptedMsg, encMsg)
 
@@ -176,10 +174,12 @@ func decrypt(secureChannel SecureChannel, encryptedMessage string) string {
 func getAESCipher(privateKeyStr, publicKeyStr string) (cipher.Block, []byte) {
 	privateKeyBytes, _ := hex.DecodeString(privateKeyStr)
 	publicKeyBytes, _ := hex.DecodeString(publicKeyStr)
+
 	privateKey := new(ecdsa.PrivateKey)
 	privateKey.PublicKey.Curve = elliptic.P256()
 	privateKey.D = new(big.Int).SetBytes(privateKeyBytes)
 	privateKey.PublicKey.X, privateKey.PublicKey.Y = elliptic.Unmarshal(elliptic.P256(), publicKeyBytes)
+
 	publicKey := privateKey.PublicKey
 
 	sharedSecret, _ := privateKey.PublicKey.ScalarMult(publicKey.X, publicKey.Y, privateKey.D.Bytes())
@@ -197,8 +197,8 @@ func secureChannelScenario() {
 	fmt.Println("생성된 secure channel 객체 : ", secureChannel)
 
 	// Secure Channel 검증
-	// verifyResult := verifySecureChannel(secureChannel)
-	// fmt.Printf("Secure Channel verify result: %v\n", verifyResult)
+	verifyResult := verifySecureChannel(secureChannel)
+	fmt.Printf("Secure Channel verify result: %v\n", verifyResult)
 
 	// Secure Channel 을 사용한 메시지 암복호화
 	// message := "hello, waas"
