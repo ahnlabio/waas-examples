@@ -3,13 +3,12 @@
 package main
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -19,6 +18,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/mergermarket/go-pkcs7"
 )
 
 /*
@@ -57,12 +58,7 @@ type CreateSecureChannelResponse struct {
 	ChannelID string `json:"channelid"`
 }
 
-type createSecureChannelRequest struct {
-	PublicKey string `json:"pubkey"`
-	Plain     string `json:"plain"`
-}
-
-func createSecureChannel(secureChannelMessage string) SecureChannel {
+func createSecureChannel() SecureChannel {
 	/*
 	   생성된 공개 키와 보안 채널 메시지를 사용하여 보안 채널을 생성합니다.
 
@@ -90,7 +86,8 @@ func createSecureChannel(secureChannelMessage string) SecureChannel {
 
 	// 바이트 배열을 16진수 문자열로 인코딩
 	publicKeyStr := hex.EncodeToString(publicKeyBytes)
-	secureChannelMessage = "conanTestGolang" // (1)
+	fmt.Println("publicKeyStr : ", publicKeyStr)
+	secureChannelMessage := "ahnlabblockchaincompany" // (1)
 
 	// 전송할 form 데이터 생성
 	formData := url.Values{
@@ -131,14 +128,8 @@ func createSecureChannel(secureChannelMessage string) SecureChannel {
 }
 
 func createKeypair() KeyPair {
-	// ECDSA 키 쌍 생성
-	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		log.Fatal()
-	}
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	publicKey := &privateKey.PublicKey
-
-	// KeyPair 인스턴스 생성 및 반환
 	return KeyPair{
 		PrivateKey: privateKey,
 		PublicKey:  publicKey,
@@ -146,123 +137,80 @@ func createKeypair() KeyPair {
 }
 
 func verifySecureChannel(secureChannel SecureChannel) bool {
-	return secureChannel.Message == decrypt(secureChannel, secureChannel.Encrypted)
+	fmt.Println(secureChannel)
+	decryptedMessage := decrypt(secureChannel, secureChannel.Encrypted)
+	return secureChannel.Message == decryptedMessage
 }
 
-func decrypt(secureChannel SecureChannel, encryptedMessage string) string {
-	cipherBlock := getAESCipher(secureChannel.PrivateKey, secureChannel.ServerPublicKey)
-
-	encMsg, err := base64.StdEncoding.DecodeString(encryptedMessage)
-	if err != nil {
-		log.Fatal("fail to decode message", err)
-	}
-
-	iv := encMsg[:aes.BlockSize]
-	ciphertext := encMsg[aes.BlockSize:]
-
-	mode := cipher.NewCBCDecrypter(cipherBlock, iv)
-	decrypted := make([]byte, len(ciphertext))
-	mode.CryptBlocks(decrypted, ciphertext)
-
-	unpaddedMsg, err := pkcs7Unpad(decrypted, aes.BlockSize)
-	if err != nil {
-		log.Fatal("fail to unpad ", err, aes.BlockSize, decrypted, ciphertext, encMsg)
-	}
-
-	return string(unpaddedMsg)
-}
-
-// 암호화 함수
 func encrypt(secureChannel SecureChannel, message string) string {
-	cipherBlock := getAESCipher(secureChannel.PrivateKey, secureChannel.ServerPublicKey)
+	block, iv := getAESCipher(secureChannel.PrivateKey, secureChannel.ServerPublicKey)
 
-	paddedMsg := pkcs7Pad([]byte(message), aes.BlockSize)
-	ciphertext := make([]byte, len(paddedMsg))
-	iv := make([]byte, aes.BlockSize)
-	if _, err := rand.Read(iv); err != nil {
-		log.Fatal()
+	paddedMsg, err := pkcs7.Pad([]byte(message), aes.BlockSize)
+	if err != nil {
+		log.Fatal("fail to pad message", err)
 	}
+	encMsg := make([]byte, len(paddedMsg))
 
-	mode := cipher.NewCBCEncrypter(cipherBlock, iv)
-	mode.CryptBlocks(ciphertext, paddedMsg)
-
-	encMsg := append(iv, ciphertext...)
+	encrypter := cipher.NewCBCEncrypter(block, iv)
+	encrypter.CryptBlocks(encMsg, paddedMsg)
+	// cipher.Encrypt(encMsg, paddedMsg)
 	return base64.StdEncoding.EncodeToString(encMsg)
 }
 
-func getAESCipher(privateKey, publicKey string) cipher.Block {
-	// 16진수 문자열을 바이트 배열로 변환
-	pubKeyBytes, _ := hex.DecodeString(publicKey)
-	privKeyBytes, _ := hex.DecodeString(privateKey)
+func decrypt(secureChannel SecureChannel, encryptedMessage string) string {
+	block, iv := getAESCipher(secureChannel.PrivateKey, secureChannel.ServerPublicKey)
 
-	// 공개 키와 개인 키 복원
-	pubKeyX, pubKeyY := elliptic.Unmarshal(elliptic.P256(), pubKeyBytes)
-	pubKey := &ecdsa.PublicKey{Curve: elliptic.P256(), X: pubKeyX, Y: pubKeyY}
-	privKey := &ecdsa.PrivateKey{PublicKey: *pubKey, D: new(big.Int).SetBytes(privKeyBytes)}
+	encMsg, _ := base64.StdEncoding.DecodeString(encryptedMessage)
+	decryptedMsg := make([]byte, len(encMsg))
+	// cipher.Decrypt(decryptedMsg, encMsg)
+	decrypter := cipher.NewCBCDecrypter(block, iv)
+	decrypter.CryptBlocks(decryptedMsg, encMsg)
 
-	// 공유 비밀 생성
-	secret, err := sharedSecret(privKey, pubKey)
+	unpadMSG, err := pkcs7.Unpad(decryptedMsg, aes.BlockSize)
 	if err != nil {
-		log.Fatalf("Error generating shared secret: %v", err)
+		log.Fatal("fail to pad message", err)
 	}
-
-	ecdh.P256().GenerateKey()
-
-	// AES 키와 IV 생성
-	aesKey := secret[:16]
-	aes.NewCipher()
-	// AES 암호화 블록 생성
-	block, err := aes.NewCipher(aesKey)
-	if err != nil {
-		log.Fatalf("Error creating AES cipher: %v", err)
-	}
-
-	return block
+	return string(unpadMSG)
 }
 
-// sharedSecret 함수 정의
-func sharedSecret(priv *ecdsa.PrivateKey, pub *ecdsa.PublicKey) ([]byte, error) {
-	x, _ := pub.Curve.ScalarMult(pub.X, pub.Y, priv.D.Bytes())
-	return x.Bytes(), nil
-}
+func getAESCipher(privateKeyStr, publicKeyStr string) (cipher.Block, []byte) {
+	privateKeyBytes, _ := hex.DecodeString(privateKeyStr)
+	publicKeyBytes, _ := hex.DecodeString(publicKeyStr)
+	privateKey := new(ecdsa.PrivateKey)
+	privateKey.PublicKey.Curve = elliptic.P256()
+	privateKey.D = new(big.Int).SetBytes(privateKeyBytes)
+	privateKey.PublicKey.X, privateKey.PublicKey.Y = elliptic.Unmarshal(elliptic.P256(), publicKeyBytes)
+	publicKey := privateKey.PublicKey
 
-// PKCS7 패딩 함수
-func pkcs7Pad(data []byte, blockSize int) []byte {
-	padding := blockSize - len(data)%blockSize
-	padText := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(data, padText...)
-}
+	sharedSecret, _ := privateKey.PublicKey.ScalarMult(publicKey.X, publicKey.Y, privateKey.D.Bytes())
+	hash := sha256.Sum256(sharedSecret.Bytes())
 
-func pkcs7Unpad(data []byte, blockSize int) ([]byte, error) {
-	length := len(data)
-	if length == 0 {
-		return nil, fmt.Errorf("invalid padding data size")
-	}
-	padding := int(data[length-1])
-	if padding > blockSize || padding == 0 {
-		return nil, fmt.Errorf("invalid padding size")
-	}
-	return data[:length-padding], nil
+	key := hash[0:16]
+	iv := hash[16:32]
+	block, _ := aes.NewCipher(key)
+	return block, iv
 }
 
 func secureChannelScenario() {
-	secureChannelMSG := "ahnlabblockchaincompany"
-
 	// Secure channel 생성
-	secureChannel := createSecureChannel(secureChannelMSG)
+	secureChannel := createSecureChannel()
 	fmt.Println("생성된 secure channel 객체 : ", secureChannel)
 
 	// Secure Channel 검증
-	verifyResult := verifySecureChannel(secureChannel)
-	fmt.Printf("Secure Channel verify result: %v", verifyResult)
+	// verifyResult := verifySecureChannel(secureChannel)
+	// fmt.Printf("Secure Channel verify result: %v\n", verifyResult)
 
 	// Secure Channel 을 사용한 메시지 암복호화
-	message := "hello, waas"
-	encryptedMessage := encrypt(secureChannel, message)
+	// message := "hello, waas"
+	encryptedMessage := encrypt(secureChannel, secureChannel.Message)
 	decryptedMessage := decrypt(secureChannel, encryptedMessage)
 
-	fmt.Printf("message encrypt result: %v", (encryptedMessage == decryptedMessage))
-	fmt.Print("hello worrrrr")
+	fmt.Printf("message encrypt result: %v\n", (secureChannel.Message == decryptedMessage))
+	fmt.Println(secureChannel.Message, encryptedMessage, decryptedMessage)
+	fmt.Println("public key : ", secureChannel.ServerPublicKey)
+	fmt.Println("private key : ", secureChannel.PrivateKey)
+	fmt.Println("encryptedMessage : ", encryptedMessage)
+	fmt.Println("hello worrrrr")
 }
 
 /*
