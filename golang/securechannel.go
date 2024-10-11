@@ -85,7 +85,6 @@ func createSecureChannel() SecureChannel {
 
 	// 바이트 배열을 16진수 문자열로 인코딩
 	publicKeyStr := hex.EncodeToString(publicKeyBytes)
-	fmt.Println("publicKeyStr : ", publicKeyStr)
 	secureChannelMessage := "ahnlabblockchaincompany" // (1)
 
 	// 전송할 form 데이터 생성
@@ -188,17 +187,18 @@ func getAESCipher(privateKeyStr, publicKeyStr string) (cipher.Block, []byte) {
 func secureChannelScenario() {
 	// Secure channel 생성
 	secureChannel := createSecureChannel()
+	fmt.Println("생성된 secure channel 객체: ", secureChannel)
 
 	// Secure Channel 검증
 	verifyResult := verifySecureChannel(secureChannel)
 	fmt.Printf("Secure Channel verify result: %v\n", verifyResult) // true 예상
 
 	// Secure Channel 을 사용한 메시지 암복호화
-	// message := "hello, waas"
-	encryptedMessage := encrypt(secureChannel, secureChannel.Message)
+	message := "hello, waas"
+	encryptedMessage := encrypt(secureChannel, message)
 	decryptedMessage := decrypt(secureChannel, encryptedMessage)
 
-	fmt.Printf("message encrypt result: %v\n", (secureChannel.Message == decryptedMessage)) // true 예상
+	fmt.Printf("message encrypt result: %v\n", (message == decryptedMessage)) // true 예상
 }
 
 /*
