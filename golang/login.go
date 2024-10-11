@@ -1,7 +1,8 @@
-// login.py - WAAS 로그인 API 사용 예제
+// login.go - WAAS 로그인 API 사용 예제
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +10,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const WAAS_BASE_URL = "https://dev-api.waas.myabcwallet.com"
@@ -23,14 +26,32 @@ func getBaseURL() string {
 	return waas_base_url
 }
 
-type emailLoginResult struct {
+type EmailLoginResult struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 	TokenType    string `json:"token_type"`
 	ExpiredIn    int    `json:"expired_in"`
 }
 
-func emailLogin(email, encryptedPassword, secureChannelID, auth string) emailLoginResult {
+// JWKKey는 JWK 키의 구조체를 정의합니다.
+type JWKKey struct {
+	Kty string `json:"kty"`
+	Use string `json:"use"`
+	Crv string `json:"crv"`
+	Kid string `json:"kid"`
+	Alg string `json:"alg"`
+	N   string `json:"n"`
+	E   string `json:"e"`
+	X   string `json:"x"`
+	Y   string `json:"y"`
+}
+
+// JWKDict는 JWK 키 목록을 포함하는 구조체를 정의합니다.
+type JWKDict struct {
+	Keys []JWKKey `json:"keys"`
+}
+
+func emailLogin(email, encryptedPassword, secureChannelID, auth string) EmailLoginResult {
 	/*
 	   이메일과 암호를 사용하여 로그인 요청을 보냅니다.
 
@@ -75,7 +96,7 @@ func emailLogin(email, encryptedPassword, secureChannelID, auth string) emailLog
 		log.Fatalf("Request failed with status: %d", resp.StatusCode)
 	}
 
-	var result emailLoginResult
+	var result EmailLoginResult
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		log.Fatal("Failed to decode response:", err)
 	}
@@ -83,7 +104,7 @@ func emailLogin(email, encryptedPassword, secureChannelID, auth string) emailLog
 	return result
 }
 
-func refreshToken(refreshToken, auth string) emailLoginResult {
+func refreshToken(refreshToken, auth string) EmailLoginResult {
 	/*
 		refresh token 을 사용하여 access token 을 재발급합니다.
 
@@ -120,10 +141,155 @@ func refreshToken(refreshToken, auth string) emailLoginResult {
 		log.Fatalf("Request failed with status: %d", resp.StatusCode)
 	}
 
-	var result emailLoginResult
+	var result EmailLoginResult
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		log.Fatal("Failed to decode response:", err)
 	}
 
 	return result
 }
+
+func verifyToken(token string) bool {
+	/*
+	   Token 을 검증합니다.
+
+	    1. Token 으로부터 user_pool_id 를 추출합니다.
+
+	    2. user_pool_id 를 사용하여 JWK 목록을 불러옵니다.
+
+	    3. Token header 의 kid 값과 일치하는 JWK 를 찾아 token 을 검증합니다.
+
+	       jwks.json example:
+	       >>> {
+	       "keys": [
+	       {
+	       "kty": "EC",
+	       "use": "sig",
+	       "crv": "P-256",
+	       "kid": "0",
+	       "x": "ZrVThPhiQSQw1YQcuXjD1qm2stKQty2N1L8gnWDVtzU",
+	       "y": "B6nqJgdH00TIPJkINiT6JzfDfteKVLYtP0x3NuaCpbY",
+	       "alg": "ES256",
+	       }
+	       ]
+	       }
+
+	       decoded_token data example:
+	       >>> {
+	       "sub": "85abcd789a0749e0b8de39226c05f81c",
+	       "aud": "https://mw.myabcwallet.com",
+	       "iss": "https://dev-api.id.myabcwallet.com/266021e24dd0bfaaa96f2b5e21d7c800",
+	       "pid": "5babdf06-2a5c-4d17-88f5-2998a3db7e21",
+	       "exp": 1727416466,
+	       "iat": 1727415866,
+	       "jti": "bc5c7a5f29684063bdd332b9262d1c7b",
+	       "user-agent": "python-requests/2.32.3",
+	       }
+
+	       Args:
+	       token (str): 검증할 JWT token.
+
+	       Returns:
+	       bool: 검증 결과.
+	*/
+
+	// JWT 토큰 디코딩 (서명 검증 없이)
+	parsedToken, _, err := new(jwt.Parser).ParseUnverified(token, jwt.MapClaims{})
+	if err != nil {
+		log.Fatalf("Failed to parse token: %v", err)
+	}
+
+	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok {
+		iss := claims["iss"].(string)
+		parsedURL, err := url.Parse(iss)
+		if err != nil {
+			log.Fatalf("Failed to parse issuer URL: %v", err)
+		}
+		userPoolID := strings.TrimPrefix(parsedURL.Path, "/")
+
+		resp, err := http.Get(fmt.Sprintf("%s/jwk/key-service/%s/.well-known/jwks.json", getBaseURL(), userPoolID))
+		if err != nil {
+			log.Fatal("Failed to get jwt")
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			log.Fatalf("Request failed with status: %d", resp.StatusCode)
+		}
+
+		var result JWKDict
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			log.Fatal("Failed to decode response:", err)
+		}
+
+		// JWT 헤더에서 kid 값 추출
+		jwtHeader := parsedToken.Header
+		kid, ok := jwtHeader["kid"].(string)
+		if !ok {
+			log.Fatalf("Failed to get kid from token header")
+		}
+
+		// kid 값이 일치하는 첫 번째 키 찾기
+		var foundKey *JWKKey
+		for _, key := range result.Keys {
+			if key.Kid == kid {
+				foundKey = &key
+				break
+			}
+		}
+
+		return foundKey != nil
+	} else {
+		log.Fatalf("Invalid token claims")
+	}
+
+	return false
+}
+
+func loginScenario() {
+	email := "email"                // 사용자 이메일
+	password := "password"          // 사용자 비밀번호
+	clientID := "Client ID"         // 발급받은 Client ID
+	clientSecret := "Client Secret" // 발급받은 Client Secret
+
+	/*
+		//TODO secure channel rebase 후 주석 해제
+		// Secure Channel 생성
+		secure_channel = securechannel.create_secure_channel()
+
+		// password 는 Secure Channel 암호화가 필요합니다
+		encrypted_password = securechannel.encrypt(secure_channel, password)
+	*/
+
+	// Client ID / Client Secret
+	auth, err := base64.StdEncoding.DecodeString(fmt.Sprintf("%s:%s", clientID, clientSecret)) // (2)
+	if err != nil {
+		log.Fatal("fail to encoding", err)
+	}
+
+	// 로그인
+	loginResult := emailLogin(email, "", "", string(auth))
+
+	// 성공 시 jwt token 생성됨
+	fmt.Println("access token : ", loginResult.AccessToken)
+	fmt.Println("refresh token : ", loginResult.RefreshToken)
+
+	// jwt token 검증
+	verifyResult := verifyToken(loginResult.AccessToken)
+	fmt.Println("verify result : ", verifyResult)
+
+	// refresh token을 이용하여 token 재발급
+	refreshTokenResult := refreshToken(loginResult.RefreshToken, string(auth))
+
+	// 성공 시 jwt token 재발급됨
+	fmt.Println("access token : ", refreshTokenResult.AccessToken)
+	fmt.Println("refresh token : ", refreshTokenResult.RefreshToken)
+
+	// jwt token 검증
+	verifyResult = verifyToken(refreshTokenResult.AccessToken)
+	fmt.Println("verify result : ", verifyResult)
+}
+
+/*
+1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
+2.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
+*/
