@@ -87,15 +87,15 @@ func RegisterEmailUser(email, encryptedPassword, verificationCode, channelID, au
 
 	urlStr := fmt.Sprintf("%s/member/user-management/users/v2/adduser", getBaseURL())
 	formData := url.Values{
-		"username":          {email},
-		"password":          {encryptedPassword},
-		"verification_code": {verificationCode},
-		"overage":           {strconv.Itoa(overage)},
-		"agree":             {strconv.Itoa(agree)},
-		"collect":           {strconv.Itoa(collect)},
-		"third_party":       {strconv.Itoa(thirdParty)},
-		"advertise":         {strconv.Itoa(advertise)},
-		"serviceid":         {"https://mw.myabcwallet.com"},
+		"username":    {email},
+		"password":    {encryptedPassword},
+		"code":        {verificationCode},
+		"overage":     {strconv.Itoa(overage)},
+		"agree":       {strconv.Itoa(agree)},
+		"collect":     {strconv.Itoa(collect)},
+		"third_party": {strconv.Itoa(thirdParty)},
+		"advertise":   {strconv.Itoa(advertise)},
+		"serviceid":   {"https://mw.myabcwallet.com"},
 	}
 
 	req, err := http.NewRequest("POST", urlStr, strings.NewReader(formData.Encode()))
@@ -238,11 +238,11 @@ func VerifyCode(email, code string) bool {
 }
 
 func SignupScenario() {
-	email := "email"                        // 사용자 이메일
+	email := "email@email.com"              // 사용자 이메일
 	password := "password"                  // 사용자 비밀번호
-	clientID := "Client ID"                 // 발급받은 Client ID
-	clientSecret := "Client Secret"         // 발급받은 Client Secret
-	verificationCode := "verification code" // 사용자가 입력한 인증 코드
+	clientID := "client id"                 // 발급받은 Client ID
+	clientSecret := "client secret"         // 발급받은 Client Secret
+	verificationCode := "verifiaction code" // 사용자가 입력한 인증 코드
 
 	// 이미 가입된 사용자인지 확인합니다.
 	if IsExistUser(email) {
@@ -266,8 +266,6 @@ func SignupScenario() {
 	secureChannelRes := securechannel.CreateSecureChannel()
 	encryptedPassword := securechannel.Encrypt(secureChannelRes, password)
 
-	fmt.Println(secureChannelRes, encryptedPassword)
-
 	// 사용자의 동의를 받습니다.
 	overage := 1
 	agree := 1
@@ -279,7 +277,7 @@ func SignupScenario() {
 	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret)))
 
 	// 사용자를 등록합니다
-	RegisterEmailUser(email, encryptedPassword, verificationCode, clientID, auth, overage, agree, collect, thirdParty, advertise)
+	RegisterEmailUser(email, encryptedPassword, verificationCode, secureChannelRes.ChannelID, auth, overage, agree, collect, thirdParty, advertise)
 	fmt.Println("success signup")
 
 	existResult := IsExistUser(email)
