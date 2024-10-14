@@ -15,6 +15,11 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+/*
+	해당 예제는 정상동작하는 상황을 가정하고, 에러 처리를 따로하지 않음
+	구현시에 에러 및 예외처리 적용 필요
+*/
+
 const WAAS_BASE_URL = "https://dev-api.waas.myabcwallet.com"
 
 // 필수 함수 아님. 유틸성 함수

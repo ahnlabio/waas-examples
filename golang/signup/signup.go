@@ -15,6 +15,11 @@ import (
 	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
 )
 
+/*
+	해당 예제는 정상동작하는 상황을 가정하고, 에러 처리를 따로하지 않음
+	구현시에 에러 및 예외처리 적용 필요
+*/
+
 const WAAS_BASE_URL = "https://dev-api.waas.myabcwallet.com"
 
 // 필수 함수 아님. 유틸성 함수
@@ -95,7 +100,7 @@ func RegisterEmailUser(email, encryptedPassword, verificationCode, channelID, au
 
 	req, err := http.NewRequest("POST", urlStr, strings.NewReader(formData.Encode()))
 	if err != nil {
-		log.Fatal()
+		log.Fatal(err)
 	}
 
 	// 헤더 설정
@@ -107,13 +112,13 @@ func RegisterEmailUser(email, encryptedPassword, verificationCode, channelID, au
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal()
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
 	// 성공이 아닐 경우 예외처리
 	if resp.StatusCode != http.StatusOK {
-		log.Fatal()
+		log.Fatal(resp.StatusCode, resp)
 	}
 }
 
@@ -190,13 +195,13 @@ func sendCode(email, lang string, template verifyCodeType) {
 
 	resp, err := http.Get(url.String())
 	if err != nil {
-		log.Fatal()
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
 	// 성공이 아닐 경우 예외처리
 	if resp.StatusCode != http.StatusOK {
-		log.Fatal()
+		log.Fatal(resp.StatusCode)
 	}
 }
 
@@ -233,7 +238,7 @@ func VerifyCode(email, code string) bool {
 }
 
 func SignupScenario() {
-	email := "conantest"                    // 사용자 이메일
+	email := "email"                        // 사용자 이메일
 	password := "password"                  // 사용자 비밀번호
 	clientID := "Client ID"                 // 발급받은 Client ID
 	clientSecret := "Client Secret"         // 발급받은 Client Secret
@@ -260,6 +265,8 @@ func SignupScenario() {
 	// 사용자의 비밀번호를 암호화합니다.
 	secureChannelRes := securechannel.CreateSecureChannel()
 	encryptedPassword := securechannel.Encrypt(secureChannelRes, password)
+
+	fmt.Println(secureChannelRes, encryptedPassword)
 
 	// 사용자의 동의를 받습니다.
 	overage := 1
