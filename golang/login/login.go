@@ -244,7 +244,7 @@ func VerifyToken(token string) bool {
 }
 
 func LoginScenario() {
-	email := "email"                // 사용자 이메일
+	email := "email@email.com"      // 사용자 이메일
 	password := "password"          // 사용자 비밀번호
 	clientID := "Client ID"         // 발급받은 Client ID
 	clientSecret := "Client Secret" // 발급받은 Client Secret

@@ -240,8 +240,8 @@ func VerifyCode(email, code string) bool {
 func SignupScenario() {
 	email := "email@email.com"              // 사용자 이메일
 	password := "password"                  // 사용자 비밀번호
-	clientID := "client id"                 // 발급받은 Client ID
-	clientSecret := "client secret"         // 발급받은 Client Secret
+	clientID := "Client ID"                 // 발급받은 Client ID
+	clientSecret := "Client Secret"         // 발급받은 Client Secret
 	verificationCode := "verifiaction code" // 사용자가 입력한 인증 코드
 
 	// 이미 가입된 사용자인지 확인합니다.
