@@ -217,6 +217,7 @@ func VerifyCode(email, code string) bool {
 
 	   Returns:
 	       bool: 사용자가 입력한 코드가 올바른 경우 True, 그렇지 않은 경우 False.
+
 	   Raises:
 	       HTTPError: 요청이 실패한 경우.
 	*/
