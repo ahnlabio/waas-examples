@@ -217,7 +217,6 @@ func VerifyCode(email, code string) bool {
 
 	   Returns:
 	       bool: 사용자가 입력한 코드가 올바른 경우 True, 그렇지 않은 경우 False.
-
 	   Raises:
 	       HTTPError: 요청이 실패한 경우.
 	*/
@@ -286,5 +285,5 @@ func SignupScenario() {
 
 /*
 1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_3))
-3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
+2.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
 */
