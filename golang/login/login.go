@@ -259,10 +259,7 @@ func LoginScenario() {
 	encryptedPassword := securechannel.Encrypt(secureChannelRes, password)
 
 	// Client ID / Client Secret
-	auth, err := base64.StdEncoding.DecodeString(fmt.Sprintf("%s:%s", clientID, clientSecret)) // (2)
-	if err != nil {
-		log.Fatal("fail to encoding", err)
-	}
+	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret)))
 
 	// 로그인
 	loginResult := EmailLogin(email, encryptedPassword, secureChannelRes.ChannelID, string(auth))
