@@ -72,7 +72,7 @@ func IsExistUser(email string) bool {
 	return resp.StatusCode != http.StatusOK
 }
 
-func RegisterEmailUser(email, encryptedPassword, vrificationCode, channelID, auth string, overage, agree, collect, thirdParty, advertise int) {
+func RegisterEmailUser(email, encryptedPassword, verificationCode, channelID, auth string, overage, agree, collect, thirdParty, advertise int) {
 	/*
 	   회원 가입
 
@@ -95,7 +95,7 @@ func RegisterEmailUser(email, encryptedPassword, vrificationCode, channelID, aut
 	formData := url.Values{
 		"username":          {email},
 		"password":          {encryptedPassword},
-		"verification_code": {vrificationCode},
+		"verification_code": {verificationCode},
 		"overage":           {strconv.Itoa(overage)},
 		"agree":             {strconv.Itoa(agree)},
 		"collect":           {strconv.Itoa(collect)},
