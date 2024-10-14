@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
+	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel" // (1)
 )
 
 /*
@@ -76,7 +76,7 @@ func RegisterEmailUser(email, encryptedPassword, verificationCode, channelID, au
 	       email (str): 사용자 이메일
 	       encrypted_password (str): 암호화된 사용자 비밀번호. secure channel 로 암호화 되어야 합니다.
 	       verification_code (str): 인증 코드. 이메일로 전송된 인증 코드를 입력합니다.
-	       channel_id (str): 보안 채널 ID.  # (2)
+	       channel_id (str): 보안 채널 ID.
 	       auth (str): 인코딩된 인증 정보. 발급받은 Client ID 와 Client Secret 을 base64 로 인코딩한 값입니다.
 	       overage (int): 14세 이상 사용자 동의
 	       agree (int): 서비스 이용 약관 동의
@@ -274,7 +274,7 @@ func SignupScenario() {
 	advertise := 1
 
 	// Client ID / Client Secret
-	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret)))
+	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret))) // (2)
 
 	// 사용자를 등록합니다
 	RegisterEmailUser(email, encryptedPassword, verificationCode, secureChannelRes.ChannelID, auth, overage, agree, collect, thirdParty, advertise)
@@ -285,7 +285,6 @@ func SignupScenario() {
 }
 
 /*
-1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
-2.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
+1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_3))
 3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
 */

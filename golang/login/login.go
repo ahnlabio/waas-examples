@@ -11,7 +11,7 @@ import (
 	"os"
 	"strings"
 
-	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
+	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel" // (1)
 	"github.com/golang-jwt/jwt"
 )
 
@@ -256,7 +256,7 @@ func LoginScenario() {
 	encryptedPassword := securechannel.Encrypt(secureChannelRes, password)
 
 	// Client ID / Client Secret
-	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret)))
+	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret))) // (2)
 
 	// 로그인
 	loginResult := EmailLogin(email, encryptedPassword, secureChannelRes.ChannelID, string(auth))
@@ -282,6 +282,6 @@ func LoginScenario() {
 }
 
 /*
-1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
+1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_3))
 2.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
 */
