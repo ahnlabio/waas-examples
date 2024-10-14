@@ -205,50 +205,50 @@ func VerifyToken(token string) bool {
 		log.Fatalf("Failed to parse token: %v", err)
 	}
 
-	if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok {
-		iss := claims["iss"].(string)
-		parsedURL, err := url.Parse(iss)
-		if err != nil {
-			log.Fatalf("Failed to parse issuer URL: %v", err)
-		}
-		userPoolID := strings.TrimPrefix(parsedURL.Path, "/")
-
-		resp, err := http.Get(fmt.Sprintf("%s/jwk/key-service/%s/.well-known/jwks.json", getBaseURL(), userPoolID))
-		if err != nil {
-			log.Fatal("Failed to get jwt")
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			log.Fatalf("Request failed with status: %d", resp.StatusCode)
-		}
-
-		var result JWKDict
-		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			log.Fatal("Failed to decode response:", err)
-		}
-
-		// JWT 헤더에서 kid 값 추출
-		jwtHeader := parsedToken.Header
-		kid, ok := jwtHeader["kid"].(string)
-		if !ok {
-			log.Fatalf("Failed to get kid from token header")
-		}
-
-		// kid 값이 일치하는 첫 번째 키 찾기
-		var foundKey *JWKKey
-		for _, key := range result.Keys {
-			if key.Kid == kid {
-				foundKey = &key
-				break
-			}
-		}
-
-		return foundKey != nil
-	} else {
+	var claims jwt.MapClaims
+	var ok bool
+	if claims, ok = parsedToken.Claims.(jwt.MapClaims); !ok {
 		log.Fatalf("Invalid token claims")
 	}
 
-	return false
+	iss := claims["iss"].(string)
+	parsedURL, err := url.Parse(iss)
+	if err != nil {
+		log.Fatalf("Failed to parse issuer URL: %v", err)
+	}
+	userPoolID := strings.TrimPrefix(parsedURL.Path, "/")
+
+	resp, err := http.Get(fmt.Sprintf("%s/jwk/key-service/%s/.well-known/jwks.json", getBaseURL(), userPoolID))
+	if err != nil {
+		log.Fatal("Failed to get jwt")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("Request failed with status: %d", resp.StatusCode)
+	}
+
+	var result JWKDict
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		log.Fatal("Failed to decode response:", err)
+	}
+
+	// JWT 헤더에서 kid 값 추출
+	jwtHeader := parsedToken.Header
+	kid, ok := jwtHeader["kid"].(string)
+	if !ok {
+		log.Fatalf("Failed to get kid from token header")
+	}
+
+	// kid 값이 일치하는 첫 번째 키 찾기
+	var foundKey *JWKKey
+	for _, key := range result.Keys {
+		if key.Kid == kid {
+			foundKey = &key
+			break
+		}
+	}
+
+	return foundKey != nil
 }
 
 func LoginScenario() {
