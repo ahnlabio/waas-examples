@@ -3,14 +3,14 @@ package signup
 // signup.go - WAAS 회원 가입 API 사용 예제
 
 import (
-	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
+	"strings"
 
 	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
 )
@@ -25,6 +25,17 @@ func getBaseURL() string {
 	}
 
 	return waas_base_url
+}
+
+type ErrorResponse struct {
+	Code          interface{} `json:"code"`
+	MSG           interface{} `json:"msg"`
+	Object        interface{} `json:"object"`
+	ErrorResponse interface{} `json:"errorResponse"`
+}
+
+type Response struct {
+	Error ErrorResponse `json:"error"`
 }
 
 func IsExistUser(email string) bool {
@@ -61,18 +72,6 @@ func IsExistUser(email string) bool {
 	return resp.StatusCode != http.StatusOK
 }
 
-type registerRequest struct {
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	Code       string `json:"verification_code"`
-	Overage    int    `json:"overage"`
-	Agree      int    `json:"agree"`
-	Collect    int    `json:"collect"`
-	ThirdParty int    `json:"third_party"`
-	Advertise  int    `json:"advertise"`
-	ServiceID  string `json:"serviceid"`
-}
-
 func RegisterEmailUser(email, encryptedPassword, vrificationCode, channelID, auth string, overage, agree, collect, thirdParty, advertise int) {
 	/*
 	   회원 가입
@@ -92,25 +91,20 @@ func RegisterEmailUser(email, encryptedPassword, vrificationCode, channelID, aut
 	       advertise (int): 광고성 정보 수신 동의
 	*/
 
-	url := fmt.Sprintf("%s/member/user-management/users/v2/adduser", getBaseURL())
-	data := registerRequest{
-		Username:   email,
-		Password:   encryptedPassword,
-		Code:       vrificationCode,
-		Overage:    overage,
-		Agree:      agree,
-		Collect:    collect,
-		ThirdParty: thirdParty,
-		Advertise:  advertise,
-		ServiceID:  "https://mw.myabcwallet.com",
+	urlStr := fmt.Sprintf("%s/member/user-management/users/v2/adduser", getBaseURL())
+	formData := url.Values{
+		"username":          {email},
+		"password":          {encryptedPassword},
+		"verification_code": {vrificationCode},
+		"overage":           {strconv.Itoa(overage)},
+		"agree":             {strconv.Itoa(agree)},
+		"collect":           {strconv.Itoa(collect)},
+		"third_party":       {strconv.Itoa(thirdParty)},
+		"advertise":         {strconv.Itoa(advertise)},
+		"serviceid":         {"https://mw.myabcwallet.com"},
 	}
 
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		log.Fatal()
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", urlStr, strings.NewReader(formData.Encode()))
 	if err != nil {
 		log.Fatal()
 	}
@@ -217,11 +211,6 @@ func sendCode(email, lang string, template verifyCodeType) {
 	}
 }
 
-type verifyCodeRequest struct {
-	Code      string `json:"code"`
-	ServiceID string `json:"serviceid"`
-}
-
 func VerifyCode(email, code string) bool {
 	/*
 	   사용자가 입력한 코드가 올바른지 확인합니다.
@@ -239,18 +228,13 @@ func VerifyCode(email, code string) bool {
 	       HTTPError: 요청이 실패한 경우.
 	*/
 
-	url := fmt.Sprintf("%s/member/mail-service/%s/verifycode", getBaseURL(), email)
-	data := verifyCodeRequest{
-		Code:      code,
-		ServiceID: "https://mw.myabcwallet.com",
+	urlStr := fmt.Sprintf("%s/member/mail-service/%s/verifycode", getBaseURL(), email)
+	formData := url.Values{
+		"code":      {code},
+		"serviceid": {"https://mw.myabcwallet.com"},
 	}
 
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		log.Fatal()
-	}
-
-	resp, err := http.Post(url, "application/x-www-form-urlencoded", bytes.NewBuffer(jsonData))
+	resp, err := http.PostForm(urlStr, formData)
 	if err != nil {
 		log.Fatal()
 	}
@@ -260,7 +244,7 @@ func VerifyCode(email, code string) bool {
 }
 
 func SignupScenario() {
-	email := "email"                        // 사용자 이메일
+	email := "conantest"                    // 사용자 이메일
 	password := "password"                  // 사용자 비밀번호
 	clientID := "Client ID"                 // 발급받은 Client ID
 	clientSecret := "Client Secret"         // 발급받은 Client Secret
@@ -268,10 +252,10 @@ func SignupScenario() {
 
 	// 이미 가입된 사용자인지 확인합니다.
 	if IsExistUser(email) {
-		fmt.Sprintf("%s is already exist user", email)
+		log.Fatalf("%s is already exist user \n", email)
 	}
 
-	fmt.Sprintf("%s is not exist", email)
+	fmt.Printf("%s is not exist\n", email)
 
 	// 이메일로 인증 코드를 전송합니다.
 	SendVerificationCode(email, "en")
@@ -280,7 +264,7 @@ func SignupScenario() {
 	// 사용자가 입력한 인증 코드가 올바른지 확인합니다.
 	// 인증코드를 발송한 다음 사용자로부터 verification_code 를 입력 받습니다.
 	if !VerifyCode(email, verificationCode) {
-		fmt.Println("Invalid code")
+		log.Fatal("Invalid code", email, verificationCode)
 		return
 	}
 
@@ -303,7 +287,7 @@ func SignupScenario() {
 	fmt.Println("success signup")
 
 	existResult := IsExistUser(email)
-	fmt.Sprintf("%s is exist: %b", email, existResult)
+	fmt.Printf("%s is exist: %v\n", email, existResult)
 }
 
 /*
