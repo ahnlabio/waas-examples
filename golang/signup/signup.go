@@ -1,4 +1,4 @@
-package main
+package signup
 
 // signup.go - WAAS 회원 가입 API 사용 예제
 
@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+
+	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
 )
 
 const WAAS_BASE_URL = "https://dev-api.waas.myabcwallet.com"
@@ -25,7 +27,7 @@ func getBaseURL() string {
 	return waas_base_url
 }
 
-func isExistUser(email string) bool {
+func IsExistUser(email string) bool {
 	/*
 	   주어진 사용자 이메일이 이미 가입된 사용자 인지 확인합니다.
 
@@ -71,7 +73,7 @@ type registerRequest struct {
 	ServiceID  string `json:"serviceid"`
 }
 
-func registerEmailUser(email, encryptedPassword, vrificationCode, channelID, auth string, overage, agree, collect, thirdParty, advertise int) {
+func RegisterEmailUser(email, encryptedPassword, vrificationCode, channelID, auth string, overage, agree, collect, thirdParty, advertise int) {
 	/*
 	   회원 가입
 
@@ -140,7 +142,7 @@ const (
 	initPasswordCode   verifyCodeType = "initpassword"
 )
 
-func sendVerificationCode(email, lang string) {
+func SendVerificationCode(email, lang string) {
 	/*
 	   사용자 이메일로 인증 코드를 전송합니다.
 
@@ -157,7 +159,7 @@ func sendVerificationCode(email, lang string) {
 	sendCode(email, lang, authCode)
 }
 
-func sendChangePasswordCode(email, lang string) {
+func SendChangePasswordCode(email, lang string) {
 	/*
 	   사용자 이메일로 패스워드 변경 인증 코드를 전송합니다.
 
@@ -174,7 +176,7 @@ func sendChangePasswordCode(email, lang string) {
 	sendCode(email, lang, changePasswordCode)
 }
 
-func sendResetPasswordCode(email, lang string) {
+func SendResetPasswordCode(email, lang string) {
 	/*
 	   사용자 이메일로 패스워드 초기화 인증 코드를 전송합니다.
 
@@ -220,7 +222,7 @@ type verifyCodeRequest struct {
 	ServiceID string `json:"serviceid"`
 }
 
-func verifyCode(email, code string) bool {
+func VerifyCode(email, code string) bool {
 	/*
 	   사용자가 입력한 코드가 올바른지 확인합니다.
 
@@ -265,28 +267,26 @@ func SignupScenario() {
 	verificationCode := "verification code" // 사용자가 입력한 인증 코드
 
 	// 이미 가입된 사용자인지 확인합니다.
-	if isExistUser(email) {
+	if IsExistUser(email) {
 		fmt.Sprintf("%s is already exist user", email)
 	}
 
 	fmt.Sprintf("%s is not exist", email)
 
 	// 이메일로 인증 코드를 전송합니다.
-	sendVerificationCode(email, "en")
+	SendVerificationCode(email, "en")
 	fmt.Println("verification code sent")
 
 	// 사용자가 입력한 인증 코드가 올바른지 확인합니다.
 	// 인증코드를 발송한 다음 사용자로부터 verification_code 를 입력 받습니다.
-	if !verifyCode(email, verificationCode) {
+	if !VerifyCode(email, verificationCode) {
 		fmt.Println("Invalid code")
 		return
 	}
 
-	/* secure channel 부분 구현 필요
-		// 사용자의 비밀번호를 암호화합니다.
-	    secure_channel = securechannel.create_secure_channel()
-	    encrypted_password = securechannel.encrypt(secure_channel, password)
-	*/
+	// 사용자의 비밀번호를 암호화합니다.
+	secureChannelRes := securechannel.CreateSecureChannel()
+	encryptedPassword := securechannel.Encrypt(secureChannelRes, password)
 
 	// 사용자의 동의를 받습니다.
 	overage := 1
@@ -299,10 +299,10 @@ func SignupScenario() {
 	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret)))
 
 	// 사용자를 등록합니다
-	registerEmailUser(email, password, verificationCode, "", auth, overage, agree, collect, thirdParty, advertise)
+	RegisterEmailUser(email, encryptedPassword, verificationCode, clientID, auth, overage, agree, collect, thirdParty, advertise)
 	fmt.Println("success signup")
 
-	existResult := isExistUser(email)
+	existResult := IsExistUser(email)
 	fmt.Sprintf("%s is exist: %b", email, existResult)
 }
 
