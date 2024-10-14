@@ -2,6 +2,7 @@
 package mpc
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +10,9 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/ahnlabio/waas-example.git/golang/login"
+	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
 )
 
 /*
@@ -183,3 +187,45 @@ func GetWallet(email, encryptedDevicePassowrd, channelID, accessToken string) Ge
 
 	return result
 }
+
+func MPCScenario() {
+	email := "email@email.com"      // 사용자 이메일
+	password := "password"          // 사용자 비밀번호
+	clientID := "Client ID"         // 발급받은 Client ID
+	clientSecret := "Client Secret" // 발급받은 Client Secret
+
+	// Secure Channel 생성
+	secureChannelRes := securechannel.CreateSecureChannel()
+
+	// password 는 Secure Channel 암호화가 필요합니다.
+	encryptedPassword := securechannel.Encrypt(secureChannelRes, password)
+
+	// Client ID / Client Secret
+	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret))) // (3)
+
+	// 로그인
+	emailLoginResult := login.EmailLogin(email, encryptedPassword, secureChannelRes.ChannelID, auth)
+
+	// 성공시 jwt token 생성됨
+	fmt.Printf("access token: %s\n", emailLoginResult.AccessToken)
+
+	devicePassword := "password" // (4)
+	encryptedDevicePassword := securechannel.Encrypt(secureChannelRes, devicePassword)
+
+	wallet := GetWallet(email, encryptedDevicePassword, secureChannelRes.ChannelID, emailLoginResult.AccessToken)
+	fmt.Printf("wallet uid: %s\n", wallet.UID)
+	fmt.Printf("wallet wid: %s\n", wallet.WID)
+	fmt.Printf("wallet sid: %s\n", wallet.SID)
+
+	walletInfo := GetWalletInfo(emailLoginResult.AccessToken)
+	fmt.Printf("wallet info uid: %s\n", walletInfo.UID)
+	fmt.Printf("wallet info wid: %s\n", walletInfo.WID)
+	fmt.Printf("wallet info sid: %s\n", walletInfo.Accounts[0].SID)
+}
+
+/*
+1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
+2.  :man_raising_hand: Getting Started > Login 참고 ([getting-started/guide/login/](login.md#__tabbed_1_2))
+3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
+4.  :man_raising_hand: devicePassword 는 키 조각 암호화를 위해 사용됩니다. Secure Channel 암호화가 필요합니다.
+*/
