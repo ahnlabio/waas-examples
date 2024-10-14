@@ -27,17 +27,6 @@ func getBaseURL() string {
 	return waas_base_url
 }
 
-type ErrorResponse struct {
-	Code          interface{} `json:"code"`
-	MSG           interface{} `json:"msg"`
-	Object        interface{} `json:"object"`
-	ErrorResponse interface{} `json:"errorResponse"`
-}
-
-type Response struct {
-	Error ErrorResponse `json:"error"`
-}
-
 func IsExistUser(email string) bool {
 	/*
 	   주어진 사용자 이메일이 이미 가입된 사용자 인지 확인합니다.
