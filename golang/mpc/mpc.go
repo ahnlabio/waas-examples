@@ -11,8 +11,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ahnlabio/waas-example.git/golang/login"
-	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
+	"github.com/ahnlabio/waas-example.git/golang/login"                       // (2)
+	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel" // (1)
 )
 
 /*
@@ -144,7 +144,7 @@ func GetWallet(email, encryptedDevicePassowrd, channelID, accessToken string) Ge
 		Args:
 			email (str): 사용자 이메일
 			encrypted_device_password (str): Secure Channel로 암호화된 devicePassword
-			channel_id (str): 보안 채널 ID. #  (2)
+			channel_id (str): 보안 채널 ID.
 			access_token (str): 지갑 사용자의 JWT Token
 
 		Returns:
@@ -224,8 +224,8 @@ func MPCScenario() {
 }
 
 /*
-1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
-2.  :man_raising_hand: Getting Started > Login 참고 ([getting-started/guide/login/](login.md#__tabbed_1_2))
+1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_3))
+2.  :man_raising_hand: Getting Started > Login 참고 ([getting-started/guide/login/](login.md#__tabbed_1_3))
 3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
 4.  :man_raising_hand: devicePassword 는 키 조각 암호화를 위해 사용됩니다. Secure Channel 암호화가 필요합니다.
 */
