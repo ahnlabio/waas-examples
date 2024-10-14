@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -51,7 +52,7 @@ type JWKDict struct {
 	Keys []JWKKey `json:"keys"`
 }
 
-func emailLogin(email, encryptedPassword, secureChannelID, auth string) EmailLoginResult {
+func EmailLogin(email, encryptedPassword, secureChannelID, auth string) EmailLoginResult {
 	/*
 	   이메일과 암호를 사용하여 로그인 요청을 보냅니다.
 
@@ -104,7 +105,7 @@ func emailLogin(email, encryptedPassword, secureChannelID, auth string) EmailLog
 	return result
 }
 
-func refreshToken(refreshToken, auth string) EmailLoginResult {
+func RefreshToken(refreshToken, auth string) EmailLoginResult {
 	/*
 		refresh token 을 사용하여 access token 을 재발급합니다.
 
@@ -149,7 +150,7 @@ func refreshToken(refreshToken, auth string) EmailLoginResult {
 	return result
 }
 
-func verifyToken(token string) bool {
+func VerifyToken(token string) bool {
 	/*
 		Token 을 검증합니다.
 
@@ -245,20 +246,17 @@ func verifyToken(token string) bool {
 	return false
 }
 
-func loginScenario() {
-	email := "email" // 사용자 이메일
-	// password := "password"          // 사용자 비밀번호
+func LoginScenario() {
+	email := "email"                // 사용자 이메일
+	password := "password"          // 사용자 비밀번호
 	clientID := "Client ID"         // 발급받은 Client ID
 	clientSecret := "Client Secret" // 발급받은 Client Secret
 
-	/*
-		//TODO secure channel rebase 후 주석 해제
-		// Secure Channel 생성
-		secure_channel = securechannel.create_secure_channel()
+	// Secure Channel 생성
+	secureChannelRes := securechannel.CreateSecureChannel()
 
-		// password 는 Secure Channel 암호화가 필요합니다
-		encrypted_password = securechannel.encrypt(secure_channel, password)
-	*/
+	// password 는 Secure Channel 암호화가 필요합니다
+	encryptedPassword := securechannel.Encrypt(secureChannelRes, password)
 
 	// Client ID / Client Secret
 	auth, err := base64.StdEncoding.DecodeString(fmt.Sprintf("%s:%s", clientID, clientSecret)) // (2)
@@ -267,25 +265,25 @@ func loginScenario() {
 	}
 
 	// 로그인
-	loginResult := emailLogin(email, "", "", string(auth))
+	loginResult := EmailLogin(email, encryptedPassword, secureChannelRes.ChannelID, string(auth))
 
 	// 성공 시 jwt token 생성됨
 	fmt.Println("access token : ", loginResult.AccessToken)
 	fmt.Println("refresh token : ", loginResult.RefreshToken)
 
 	// jwt token 검증
-	verifyResult := verifyToken(loginResult.AccessToken)
+	verifyResult := VerifyToken(loginResult.AccessToken)
 	fmt.Println("verify result : ", verifyResult)
 
 	// refresh token을 이용하여 token 재발급
-	refreshTokenResult := refreshToken(loginResult.RefreshToken, string(auth))
+	refreshTokenResult := RefreshToken(loginResult.RefreshToken, string(auth))
 
 	// 성공 시 jwt token 재발급됨
 	fmt.Println("access token : ", refreshTokenResult.AccessToken)
 	fmt.Println("refresh token : ", refreshTokenResult.RefreshToken)
 
 	// jwt token 검증
-	verifyResult = verifyToken(refreshTokenResult.AccessToken)
+	verifyResult = VerifyToken(refreshTokenResult.AccessToken)
 	fmt.Println("verify result : ", verifyResult)
 }
 
