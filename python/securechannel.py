@@ -143,7 +143,7 @@ def main():
     message = "hello, waas"
     encrypted_message = encrypt(secure_channel, message)
     decrypted_message = decrypt(secure_channel, encrypted_message)
-    print(f"message encrypt result: {encrypted_message == decrypted_message}")
+    print(f"message encrypt result: {message == decrypted_message}")
 
 
 if __name__ == "__main__":
