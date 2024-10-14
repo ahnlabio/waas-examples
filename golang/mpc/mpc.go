@@ -45,7 +45,7 @@ type WalletAccount struct {
 type WalletInfo struct {
 	ID                         string          `json:"_id"`
 	UID                        string          `json:"uid"`
-	WID                        string          `json:"wid"`
+	WID                        int             `json:"wid"`
 	Email                      string          `json:"email"`
 	Accounts                   []WalletAccount `json:"accounts"`
 	Favorites                  []string        `json:"favorites"`
@@ -58,7 +58,7 @@ type WalletInfo struct {
 
 type GetWalletResult struct {
 	UID                   string `json:"uid"`
-	WID                   string `json:"wid"`
+	WID                   int    `json:"wid"`
 	SID                   string `json:"sid"`
 	Pvencstr              string `json:"pvencstr"`
 	EncryptDevicePassword string `json:"encryptDevicePassword"`
@@ -167,7 +167,7 @@ func GetWallet(email, encryptedDevicePassowrd, channelID, accessToken string) Ge
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Secure-Channel", channelID)
-	req.Header.Set("Authorization", fmt.Sprintf("Basic %s", accessToken))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -214,12 +214,12 @@ func MPCScenario() {
 
 	wallet := GetWallet(email, encryptedDevicePassword, secureChannelRes.ChannelID, emailLoginResult.AccessToken)
 	fmt.Printf("wallet uid: %s\n", wallet.UID)
-	fmt.Printf("wallet wid: %s\n", wallet.WID)
+	fmt.Printf("wallet wid: %v\n", wallet.WID)
 	fmt.Printf("wallet sid: %s\n", wallet.SID)
 
 	walletInfo := GetWalletInfo(emailLoginResult.AccessToken)
 	fmt.Printf("wallet info uid: %s\n", walletInfo.UID)
-	fmt.Printf("wallet info wid: %s\n", walletInfo.WID)
+	fmt.Printf("wallet info wid: %v\n", walletInfo.WID)
 	fmt.Printf("wallet info sid: %s\n", walletInfo.Accounts[0].SID)
 }
 
