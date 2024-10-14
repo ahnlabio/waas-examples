@@ -41,15 +41,7 @@ type EmailLoginResult struct {
 
 // JWKKey는 JWK 키의 구조체를 정의합니다.
 type JWKKey struct {
-	Kty string `json:"kty"`
-	Use string `json:"use"`
-	Crv string `json:"crv"`
 	Kid string `json:"kid"`
-	Alg string `json:"alg"`
-	N   string `json:"n"`
-	E   string `json:"e"`
-	X   string `json:"x"`
-	Y   string `json:"y"`
 }
 
 // JWKDict는 JWK 키 목록을 포함하는 구조체를 정의합니다.
