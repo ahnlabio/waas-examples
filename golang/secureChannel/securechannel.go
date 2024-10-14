@@ -178,7 +178,7 @@ func getAESCipher(privateKeyStr, publicKeyStr string) (cipher.Block, []byte) {
 func SecureChannelScenario() {
 	// Secure channel 생성
 	secureChannel := CreateSecureChannel()
-	fmt.Println("생성된 secure channel 객체: ", secureChannel)
+	fmt.Println("Secure channel 생성 완료")
 
 	// Secure Channel 검증
 	verifyResult := VerifySecureChannel(secureChannel)

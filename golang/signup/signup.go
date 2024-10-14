@@ -15,6 +15,11 @@ import (
 	securechannel "github.com/ahnlabio/waas-example.git/golang/secureChannel"
 )
 
+/*
+	해당 예제는 정상동작하는 상황을 가정하고, 에러 처리를 따로하지 않음
+	구현시에 에러 및 예외처리 적용 필요
+*/
+
 const WAAS_BASE_URL = "https://dev-api.waas.myabcwallet.com"
 
 // 필수 함수 아님. 유틸성 함수
@@ -25,17 +30,6 @@ func getBaseURL() string {
 	}
 
 	return waas_base_url
-}
-
-type ErrorResponse struct {
-	Code          interface{} `json:"code"`
-	MSG           interface{} `json:"msg"`
-	Object        interface{} `json:"object"`
-	ErrorResponse interface{} `json:"errorResponse"`
-}
-
-type Response struct {
-	Error ErrorResponse `json:"error"`
 }
 
 func IsExistUser(email string) bool {
@@ -93,20 +87,20 @@ func RegisterEmailUser(email, encryptedPassword, verificationCode, channelID, au
 
 	urlStr := fmt.Sprintf("%s/member/user-management/users/v2/adduser", getBaseURL())
 	formData := url.Values{
-		"username":          {email},
-		"password":          {encryptedPassword},
-		"verification_code": {verificationCode},
-		"overage":           {strconv.Itoa(overage)},
-		"agree":             {strconv.Itoa(agree)},
-		"collect":           {strconv.Itoa(collect)},
-		"third_party":       {strconv.Itoa(thirdParty)},
-		"advertise":         {strconv.Itoa(advertise)},
-		"serviceid":         {"https://mw.myabcwallet.com"},
+		"username":    {email},
+		"password":    {encryptedPassword},
+		"code":        {verificationCode},
+		"overage":     {strconv.Itoa(overage)},
+		"agree":       {strconv.Itoa(agree)},
+		"collect":     {strconv.Itoa(collect)},
+		"third_party": {strconv.Itoa(thirdParty)},
+		"advertise":   {strconv.Itoa(advertise)},
+		"serviceid":   {"https://mw.myabcwallet.com"},
 	}
 
 	req, err := http.NewRequest("POST", urlStr, strings.NewReader(formData.Encode()))
 	if err != nil {
-		log.Fatal()
+		log.Fatal(err)
 	}
 
 	// 헤더 설정
@@ -118,13 +112,13 @@ func RegisterEmailUser(email, encryptedPassword, verificationCode, channelID, au
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal()
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
 	// 성공이 아닐 경우 예외처리
 	if resp.StatusCode != http.StatusOK {
-		log.Fatal()
+		log.Fatal(resp.StatusCode, resp)
 	}
 }
 
@@ -201,13 +195,13 @@ func sendCode(email, lang string, template verifyCodeType) {
 
 	resp, err := http.Get(url.String())
 	if err != nil {
-		log.Fatal()
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
 	// 성공이 아닐 경우 예외처리
 	if resp.StatusCode != http.StatusOK {
-		log.Fatal()
+		log.Fatal(resp.StatusCode)
 	}
 }
 
@@ -244,11 +238,11 @@ func VerifyCode(email, code string) bool {
 }
 
 func SignupScenario() {
-	email := "conantest"                    // 사용자 이메일
+	email := "email@email.com"              // 사용자 이메일
 	password := "password"                  // 사용자 비밀번호
 	clientID := "Client ID"                 // 발급받은 Client ID
 	clientSecret := "Client Secret"         // 발급받은 Client Secret
-	verificationCode := "verification code" // 사용자가 입력한 인증 코드
+	verificationCode := "verifiaction code" // 사용자가 입력한 인증 코드
 
 	// 이미 가입된 사용자인지 확인합니다.
 	if IsExistUser(email) {
@@ -283,7 +277,7 @@ func SignupScenario() {
 	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", clientID, clientSecret)))
 
 	// 사용자를 등록합니다
-	RegisterEmailUser(email, encryptedPassword, verificationCode, clientID, auth, overage, agree, collect, thirdParty, advertise)
+	RegisterEmailUser(email, encryptedPassword, verificationCode, secureChannelRes.ChannelID, auth, overage, agree, collect, thirdParty, advertise)
 	fmt.Println("success signup")
 
 	existResult := IsExistUser(email)
