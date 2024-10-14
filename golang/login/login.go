@@ -151,46 +151,46 @@ func refreshToken(refreshToken, auth string) EmailLoginResult {
 
 func verifyToken(token string) bool {
 	/*
-	   Token 을 검증합니다.
+		Token 을 검증합니다.
 
-	    1. Token 으로부터 user_pool_id 를 추출합니다.
+		1. Token 으로부터 user_pool_id 를 추출합니다.
 
-	    2. user_pool_id 를 사용하여 JWK 목록을 불러옵니다.
+		2. user_pool_id 를 사용하여 JWK 목록을 불러옵니다.
 
-	    3. Token header 의 kid 값과 일치하는 JWK 를 찾아 token 을 검증합니다.
+		3. Token header 의 kid 값과 일치하는 JWK 를 찾아 token 을 검증합니다.
 
-	       jwks.json example:
-	       >>> {
-	       "keys": [
-	       {
-	       "kty": "EC",
-	       "use": "sig",
-	       "crv": "P-256",
-	       "kid": "0",
-	       "x": "ZrVThPhiQSQw1YQcuXjD1qm2stKQty2N1L8gnWDVtzU",
-	       "y": "B6nqJgdH00TIPJkINiT6JzfDfteKVLYtP0x3NuaCpbY",
-	       "alg": "ES256",
-	       }
-	       ]
-	       }
+		jwks.json example:
+		>>> {
+			"keys": [
+				{
+					"kty": "EC",
+					"use": "sig",
+					"crv": "P-256",
+					"kid": "0",
+					"x": "ZrVThPhiQSQw1YQcuXjD1qm2stKQty2N1L8gnWDVtzU",
+					"y": "B6nqJgdH00TIPJkINiT6JzfDfteKVLYtP0x3NuaCpbY",
+					"alg": "ES256",
+				}
+			]
+		}
 
-	       decoded_token data example:
-	       >>> {
-	       "sub": "85abcd789a0749e0b8de39226c05f81c",
-	       "aud": "https://mw.myabcwallet.com",
-	       "iss": "https://dev-api.id.myabcwallet.com/266021e24dd0bfaaa96f2b5e21d7c800",
-	       "pid": "5babdf06-2a5c-4d17-88f5-2998a3db7e21",
-	       "exp": 1727416466,
-	       "iat": 1727415866,
-	       "jti": "bc5c7a5f29684063bdd332b9262d1c7b",
-	       "user-agent": "python-requests/2.32.3",
-	       }
+		decoded_token data example:
+		>>> {
+			"sub": "85abcd789a0749e0b8de39226c05f81c",
+			"aud": "https://mw.myabcwallet.com",
+			"iss": "https://dev-api.id.myabcwallet.com/266021e24dd0bfaaa96f2b5e21d7c800",
+			"pid": "5babdf06-2a5c-4d17-88f5-2998a3db7e21",
+			"exp": 1727416466,
+			"iat": 1727415866,
+			"jti": "bc5c7a5f29684063bdd332b9262d1c7b",
+			"user-agent": "python-requests/2.32.3",
+		}
 
-	       Args:
-	       token (str): 검증할 JWT token.
+		Args:
+		token (str): 검증할 JWT token.
 
-	       Returns:
-	       bool: 검증 결과.
+		Returns:
+		bool: 검증 결과.
 	*/
 
 	// JWT 토큰 디코딩 (서명 검증 없이)
