@@ -1,6 +1,6 @@
 // securechannel.go - WAAS Secure Channel API 사용 예제
 
-package main
+package securechannel
 
 import (
 	"crypto/aes"
@@ -55,7 +55,7 @@ type CreateSecureChannelResponse struct {
 	ChannelID string `json:"channelid"`
 }
 
-func createSecureChannel() SecureChannel {
+func CreateSecureChannel() SecureChannel {
 	/*
 	   생성된 공개 키와 보안 채널 메시지를 사용하여 보안 채널을 생성합니다.
 
@@ -125,12 +125,12 @@ func createKeypair() KeyPair {
 	}
 }
 
-func verifySecureChannel(secureChannel SecureChannel) bool {
-	decryptedMessage := decrypt(secureChannel, secureChannel.Encrypted)
+func VerifySecureChannel(secureChannel SecureChannel) bool {
+	decryptedMessage := Decrypt(secureChannel, secureChannel.Encrypted)
 	return secureChannel.Message == decryptedMessage
 }
 
-func encrypt(secureChannel SecureChannel, message string) string {
+func Encrypt(secureChannel SecureChannel, message string) string {
 	block, iv := getAESCipher(secureChannel.PrivateKey, secureChannel.ServerPublicKey)
 
 	paddedMsg, err := pkcs7.Pad([]byte(message), aes.BlockSize)
@@ -144,7 +144,7 @@ func encrypt(secureChannel SecureChannel, message string) string {
 	return base64.StdEncoding.EncodeToString(encMsg)
 }
 
-func decrypt(secureChannel SecureChannel, encryptedMessage string) string {
+func Decrypt(secureChannel SecureChannel, encryptedMessage string) string {
 	block, iv := getAESCipher(secureChannel.PrivateKey, secureChannel.ServerPublicKey)
 
 	encMsg, _ := base64.StdEncoding.DecodeString(encryptedMessage)
@@ -175,19 +175,19 @@ func getAESCipher(privateKeyStr, publicKeyStr string) (cipher.Block, []byte) {
 	return block, iv
 }
 
-func secureChannelScenario() {
+func SecureChannelScenario() {
 	// Secure channel 생성
-	secureChannel := createSecureChannel()
+	secureChannel := CreateSecureChannel()
 	fmt.Println("생성된 secure channel 객체: ", secureChannel)
 
 	// Secure Channel 검증
-	verifyResult := verifySecureChannel(secureChannel)
+	verifyResult := VerifySecureChannel(secureChannel)
 	fmt.Printf("Secure Channel verify result: %v\n", verifyResult) // true 예상
 
 	// Secure Channel 을 사용한 메시지 암복호화
 	message := "hello, waas"
-	encryptedMessage := encrypt(secureChannel, message)
-	decryptedMessage := decrypt(secureChannel, encryptedMessage)
+	encryptedMessage := Encrypt(secureChannel, message)
+	decryptedMessage := Decrypt(secureChannel, encryptedMessage)
 
 	fmt.Printf("message encrypt result: %v\n", (message == decryptedMessage)) // true 예상
 }
