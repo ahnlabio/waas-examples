@@ -1,3 +1,7 @@
-const greeting: string = "Hello, Typescript" 
+import { SecureChannelScenario } from './secureChannel.js';
 
-console.log(greeting)
+const greeting: string = 'Hello, Typescript';
+
+console.log(greeting);
+
+SecureChannelScenario();
