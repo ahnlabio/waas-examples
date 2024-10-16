@@ -13,9 +13,7 @@ function getBaseURL(): string {
     return waas_base_url;
 }
 
-const AES_BLOCK_SIZE = 16; // AES 블록 크기
-
-type SecureChannel = {
+type secureChannel = {
     PrivateKey: string;
     Message: string;
     Encrypted: string;
@@ -23,12 +21,12 @@ type SecureChannel = {
     ChannelID: string;
 };
 
-interface KeyPair {
+interface keyPair {
     privateKey: crypto.ECDH;
     publicKey: crypto.ECDH;
 }
 
-async function CreateSecureChannel(): Promise<SecureChannel> {
+async function createSecureChannel(): Promise<secureChannel> {
     /*
         생성된 공개 키와 보안 채널 메시지를 사용하여 보안 채널을 생성합니다.
 
@@ -89,7 +87,7 @@ async function CreateSecureChannel(): Promise<SecureChannel> {
     }
 }
 
-function createKeypair(): KeyPair {
+function createKeypair(): keyPair {
     const ecdh = crypto.createECDH('prime256v1');
     ecdh.generateKeys();
     return {
@@ -98,12 +96,12 @@ function createKeypair(): KeyPair {
     };
 }
 
-function VerifySecureChannel(secureChannel: SecureChannel): boolean {
-    const decryptedMessage = Decrypt(secureChannel, secureChannel.Encrypted);
+function verifySecureChannel(secureChannel: secureChannel): boolean {
+    const decryptedMessage = decrypt(secureChannel, secureChannel.Encrypted);
     return secureChannel.Message === decryptedMessage;
 }
 
-function Encrypt(secureChannel: SecureChannel, message: string): string {
+function encrypt(secureChannel: secureChannel, message: string): string {
     const { block, iv } = getAESCipher(
         secureChannel.PrivateKey,
         secureChannel.ServerPublicKey,
@@ -125,10 +123,7 @@ function Encrypt(secureChannel: SecureChannel, message: string): string {
     return encMsg.toString();
 }
 
-function Decrypt(
-    secureChannel: SecureChannel,
-    encryptedMessage: string,
-): string {
+function decrypt(secureChannel: secureChannel, encryptedMessage: string): string {
     const { block, iv } = getAESCipher(
         secureChannel.PrivateKey,
         secureChannel.ServerPublicKey,
@@ -148,10 +143,7 @@ function Decrypt(
     return decryptedMsg;
 }
 
-function getAESCipher(
-    privateKeyStr: string,
-    publicKeyStr: string,
-): { block: Buffer; iv: Buffer } {
+function getAESCipher(privateKeyStr: string, publicKeyStr: string): { block: Buffer; iv: Buffer } {
     const privateKeyBytes = Buffer.from(privateKeyStr, 'hex');
     const publicKeyBytes = Buffer.from(publicKeyStr, 'hex');
 
@@ -165,19 +157,19 @@ function getAESCipher(
     return { block: key, iv: iv };
 }
 
-export async function SecureChannelScenario() {
+export async function secureChannelScenario() {
     // Secure channel 생성
-    const secureChannel: SecureChannel = await CreateSecureChannel();
-    console.log('Secure Channel 생성 완료\n', secureChannel);
+    const secureChannelRes: secureChannel = await createSecureChannel();
+    console.log('Secure Channel 생성 완료\n', secureChannelRes);
 
     // Secure Channel 검증
-    const verifyResult: boolean = VerifySecureChannel(secureChannel);
+    const verifyResult: boolean = verifySecureChannel(secureChannelRes);
     console.log(`Secure Channel Verify Result: ${verifyResult}\n`); // true 예상
 
     // Secure Channel 을 사용한 메시지 암복호화
     const message: string = 'hello, waas';
-    const encryptedMessage: string = Encrypt(secureChannel, message);
-    const decryptedMessage: string = Decrypt(secureChannel, encryptedMessage);
+    const encryptedMessage: string = encrypt(secureChannelRes, message);
+    const decryptedMessage: string = decrypt(secureChannelRes, encryptedMessage);
 
     console.log(`message encrypt result: ${message === decryptedMessage}\n`); // true 예상
 }
