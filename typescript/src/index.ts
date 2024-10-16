@@ -7,7 +7,7 @@ async function tsTest() {
     
     console.log("==========start waas docs scenario==========");
     
-   await secureChannelScenario();
+    await secureChannelScenario();
     
     console.log("==========end waas docs scenario==========");
 }
