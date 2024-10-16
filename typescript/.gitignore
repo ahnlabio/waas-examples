@@ -27,3 +27,4 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sln
+.prettierrc
