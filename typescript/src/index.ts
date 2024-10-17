@@ -8,8 +8,8 @@ async function tsTest() {
 
   console.log('==========start waas docs scenario==========');
 
-  // await secureChannelScenario();
-  // await signupScenario();
+  await secureChannelScenario();
+  await signupScenario();
   await loginScenario();
 
   console.log('==========end waas docs scenario==========');
