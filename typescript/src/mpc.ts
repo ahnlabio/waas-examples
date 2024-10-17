@@ -63,7 +63,7 @@ async function getWallet(
       devicePassword: encryptedDevicePassword,
     });
 
-    const response: getWalletResult = await axios.post(urlStr, data, {
+    const response = await axios.post(urlStr, data, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: `Bearer ${accesssToken}`,
@@ -71,7 +71,8 @@ async function getWallet(
       },
     });
 
-    return response;
+    const wallet: getWalletResult = response.data;
+    return wallet;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
@@ -144,13 +145,15 @@ async function getWalletInfo(accessToken: string): Promise<walletInfo> {
 
   try {
     const urlStr = `${getBaseURL()}/wapi/v2/mpc/wallets/info`;
-    const response: walletInfo = await axios.get(urlStr, {
+    const response = await axios.get(urlStr, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
 
-    return response;
+    const walletInfoRes: walletInfo = response.data;
+
+    return walletInfoRes;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
@@ -163,11 +166,11 @@ async function getWalletInfo(accessToken: string): Promise<walletInfo> {
   }
 }
 
-export async function MPCScenario() {
+export async function mpcScenario() {
   const email: string = 'email@email.com'; // 사용자 이메일
   const password: string = 'password'; // 사용자 비밀번호
   const clientID: string = 'client id'; // 발급받은 Client ID
-  const clientSecret: string = 'client secret'; // 발급받은 Client Secret]
+  const clientSecret: string = 'client secret'; // 발급받은 Client Secret
 
   // Secure Channel 생성
   const secureChannelRes = await createSecureChannel();
@@ -207,3 +210,10 @@ export async function MPCScenario() {
   console.log(`wallet wid: ${walletInfo.wid}`);
   console.log(`wallet sid: ${walletInfo.accounts[0].sid}`);
 }
+
+/*
+1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_1))
+2.  :man_raising_hand: Getting Started > Login 참고 ([getting-started/guide/login/](login.md#__tabbed_1_1))
+3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
+4.  :man_raising_hand: devicePassword 는 키 조각 암호화를 위해 사용됩니다. Secure Channel 암호화가 필요합니다.
+*/
