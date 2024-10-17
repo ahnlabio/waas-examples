@@ -26,7 +26,7 @@ interface keyPair {
     publicKey: crypto.ECDH;
 }
 
-async function createSecureChannel(): Promise<secureChannel> {
+export async function createSecureChannel(): Promise<secureChannel> {
     /*
         생성된 공개 키와 보안 채널 메시지를 사용하여 보안 채널을 생성합니다.
 
@@ -101,7 +101,7 @@ function verifySecureChannel(secureChannel: secureChannel): boolean {
     return secureChannel.Message === decryptedMessage;
 }
 
-function encrypt(secureChannel: secureChannel, message: string): string {
+export function encrypt(secureChannel: secureChannel, message: string): string {
     const { block, iv } = getAESCipher(
         secureChannel.PrivateKey,
         secureChannel.ServerPublicKey,

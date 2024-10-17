@@ -1,4 +1,5 @@
 import { secureChannelScenario } from './secureChannel.js';
+import { signupScenario } from './signup.js';
 
 
 async function tsTest() {
@@ -7,7 +8,8 @@ async function tsTest() {
     
     console.log("==========start waas docs scenario==========");
     
-    await secureChannelScenario();
+    // await secureChannelScenario();
+    await signupScenario();
     
     console.log("==========end waas docs scenario==========");
 }

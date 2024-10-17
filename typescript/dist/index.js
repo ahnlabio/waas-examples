@@ -1,11 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const secureChannel_js_1 = require("./secureChannel.js");
+const signup_js_1 = require("./signup.js");
 async function tsTest() {
     const greeting = 'Hello, Typescript';
     console.log(greeting);
     console.log("==========start waas docs scenario==========");
-    await (0, secureChannel_js_1.secureChannelScenario)();
+    // await secureChannelScenario();
+    await (0, signup_js_1.signupScenario)();
     console.log("==========end waas docs scenario==========");
 }
 tsTest();
