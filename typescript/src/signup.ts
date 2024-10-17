@@ -8,12 +8,12 @@ import { createSecureChannel, encrypt } from './secureChannel';
 */
 const WAAS_BASE_URL: string = 'https://dev-api.waas.myabcwallet.com';
 function getBaseURL(): string {
-    const waas_base_url: string = process.env.WAAS_BASE_URL || WAAS_BASE_URL;
-    return waas_base_url;
+  const waas_base_url: string = process.env.WAAS_BASE_URL || WAAS_BASE_URL;
+  return waas_base_url;
 }
 
-async function isExistUser(email:string):Promise<boolean> {
-	/*
+async function isExistUser(email: string): Promise<boolean> {
+  /*
 	   주어진 사용자 이메일이 이미 가입된 사용자 인지 확인합니다.
 
 	   Args:
@@ -34,17 +34,28 @@ async function isExistUser(email:string):Promise<boolean> {
 	           "errorResponse": "{\"code\":606,\"msg\":\"Email is already in use.\"}"
 	       }
 	*/
-	try {
-		const urlStr = `${getBaseURL()}/member/user-management/users/${email}?serviceid=https://mw.myabcwallet.com`;
-		const response = await axios.get(urlStr);
-		return response.status !== 200
-	} catch(e) {
-		throw new Error(`fail to is exist user check`);
-	}
+  try {
+    const urlStr = `${getBaseURL()}/member/user-management/users/${email}?serviceid=https://mw.myabcwallet.com`;
+    const response = await axios.get(urlStr);
+    return response.status !== 200;
+  } catch (e) {
+    throw new Error(`fail to is exist user check`);
+  }
 }
 
-async function registerEmailUser(email:string, encryptedPassword:string, verificationCode:string, channelID:string, auth:string, overage:number, agree:number, collect:number, thirdParty:number, advertise:number) {
-	/*
+async function registerEmailUser(
+  email: string,
+  encryptedPassword: string,
+  verificationCode: string,
+  channelID: string,
+  auth: string,
+  overage: number,
+  agree: number,
+  collect: number,
+  thirdParty: number,
+  advertise: number,
+) {
+  /*
 	   회원 가입
 
 	   성공시 오류 없이 종료
@@ -61,45 +72,45 @@ async function registerEmailUser(email:string, encryptedPassword:string, verific
 	       third_party (int): 제3자 정보 제공 동의
 	       advertise (int): 광고성 정보 수신 동의
 	*/
-	try {
-		const urlStr:string = `${getBaseURL()}/member/user-management/users/v2/adduser`
-		const formData = qs.stringify({
-			username:    email,
-			password:    encryptedPassword,
-			code:        verificationCode,
-			overage:     overage,
-			agree:       agree,
-			collect:     collect,
-			third_party: thirdParty,
-			advertise:   advertise,
-			servicei:   "https://mw.myabcwallet.com",
-		})
-		const response = await axios.post(urlStr, formData, {
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Authorization': `Basic ${auth}`,
-				'Secure-Channel': `${channelID}`
-			},
-		})
+  try {
+    const urlStr: string = `${getBaseURL()}/member/user-management/users/v2/adduser`;
+    const formData = qs.stringify({
+      username: email,
+      password: encryptedPassword,
+      code: verificationCode,
+      overage: overage,
+      agree: agree,
+      collect: collect,
+      third_party: thirdParty,
+      advertise: advertise,
+      serviceid: 'https://mw.myabcwallet.com',
+    });
+    const response = await axios.post(urlStr, formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${auth}`,
+        'Secure-Channel': `${channelID}`,
+      },
+    });
 
-		if (response.status !== HttpStatusCode.Ok) {
-			throw new Error(
-                `fail to register email user, status code: ${response.status}`,
-            );
-		}
-	} catch(e) {
-		console.error(`fail to register email user`)
-	}
+    if (response.status !== HttpStatusCode.Ok) {
+      throw new Error(
+        `fail to register email user, status code: ${response.status}`,
+      );
+    }
+  } catch (e) {
+    console.error(`fail to register email user`);
+  }
 }
 
-type verifyCodeType = "verify" | "changepassword" | "initpassword";
+type verifyCodeType = 'verify' | 'changepassword' | 'initpassword';
 
-const authCode: verifyCodeType = "verify";
-const changePasswordCode: verifyCodeType = "changepassword";
-const initPasswordCode: verifyCodeType = "initpassword";
+const authCode: verifyCodeType = 'verify';
+const changePasswordCode: verifyCodeType = 'changepassword';
+const initPasswordCode: verifyCodeType = 'initpassword';
 
-async function sendVerificationCode(email:string, lang:string) {
-	/*
+async function sendVerificationCode(email: string, lang: string) {
+  /*
 	   사용자 이메일로 인증 코드를 전송합니다.
 
 	   성공하면 함수는 오류 없이 종료
@@ -112,11 +123,11 @@ async function sendVerificationCode(email:string, lang:string) {
 	       HTTPError: 요청이 실패한 경우.
 
 	*/
-	await sendCode(email, lang, authCode)
+  await sendCode(email, lang, authCode);
 }
 
-async function SendChangePasswordCode(email:string, lang:string) {
-	/*
+async function SendChangePasswordCode(email: string, lang: string) {
+  /*
 	   사용자 이메일로 패스워드 변경 인증 코드를 전송합니다.
 
 	   성공하면 함수는 오류 없이 종료
@@ -128,11 +139,11 @@ async function SendChangePasswordCode(email:string, lang:string) {
 	   Raises:
 	       HTTPError: 요청이 실패한 경우.
 	*/
-	await sendCode(email, lang, changePasswordCode)
+  await sendCode(email, lang, changePasswordCode);
 }
 
-async function SendResetPasswordCode(email:string, lang:string) {
-	/*
+async function SendResetPasswordCode(email: string, lang: string) {
+  /*
 	   사용자 이메일로 패스워드 초기화 인증 코드를 전송합니다.
 
 	   성공하면 함수는 오류 없이 종료
@@ -144,29 +155,29 @@ async function SendResetPasswordCode(email:string, lang:string) {
 	   Raises:
 	       HTTPError: 요청이 실패한 경우.
 	*/
-	await sendCode(email, lang, initPasswordCode)
+  await sendCode(email, lang, initPasswordCode);
 }
 
-async function sendCode(email:string, lang:string, template:verifyCodeType) {
-	try {
-        const baseURL = getBaseURL();
-        const url = new URL(`${baseURL}/member/mail-service/${email}/sendcode`);
-        
-        url.searchParams.append('lang', lang);
-        url.searchParams.append('template', template);
+async function sendCode(email: string, lang: string, template: verifyCodeType) {
+  try {
+    const baseURL = getBaseURL();
+    const url = new URL(`${baseURL}/member/mail-service/${email}/sendcode`);
 
-        const response = await axios.get(url.toString());
+    url.searchParams.append('lang', lang);
+    url.searchParams.append('template', template);
 
-        if (response.status !== 200) {
-            throw new Error(`Request failed with status code ${response.status}`);
-        }
-    } catch (error) {
-        console.error(`fail to send code`);
+    const response = await axios.get(url.toString());
+
+    if (response.status !== 200) {
+      throw new Error(`Request failed with status code ${response.status}`);
     }
+  } catch (error) {
+    console.error(`fail to send code`);
+  }
 }
 
-async function verifyCode(email:string, code:string): Promise<boolean> {
-	/*
+async function verifyCode(email: string, code: string): Promise<boolean> {
+  /*
 	   사용자가 입력한 코드가 올바른지 확인합니다.
 
 	   send_verification_code, send_auth_code, send_password_reset_code 함수로 전송된 코드를 확인합니다.
@@ -182,66 +193,77 @@ async function verifyCode(email:string, code:string): Promise<boolean> {
 	       HTTPError: 요청이 실패한 경우.
 	*/
 
-	try {
-		const urlStr = `${getBaseURL()}/member/mail-service/${email}/verifycode`
-		const formData = qs.stringify({
-			code: code,
-			serviceid: "https://mw.myabcwallet.com"
-		})
+  try {
+    const urlStr = `${getBaseURL()}/member/mail-service/${email}/verifycode`;
+    const formData = qs.stringify({
+      code: code,
+      serviceid: 'https://mw.myabcwallet.com',
+    });
 
-		const response = await axios.post(urlStr, formData)
-		return response.status === HttpStatusCode.Ok
-	} catch(e) {
-		throw new Error(`fail to verify code`);
-	}
+    const response = await axios.post(urlStr, formData);
+    return response.status === HttpStatusCode.Ok;
+  } catch (e) {
+    throw new Error(`fail to verify code`);
+  }
 }
 
 export async function signupScenario() {
-	const email:string = "email@email.com" // 사용자 이메일
-	const password:string = "password" // 사용자 비밀번호
-	const clientID:string = "client id" // 발급받은 Client ID
-	const clientSecret:string = "client secret" // 발급받은 Client Secret
-	const verificationCode:string = "verification code" // 사용자가 입력한 인증 코드
+  const email: string = 'conan@ahnlab.io'; // 사용자 이메일
+  const password: string = 'conantest'; // 사용자 비밀번호
+  const clientID: string = 'dyNztnxA4FR8C5reoE2R0D'; // 발급받은 Client ID
+  const clientSecret: string = '53DVTyixQEHa3FOfMLmzWFc1VktWSHASz9Svq6eIV7eG'; // 발급받은 Client Secret
+  const verificationCode: string = 'verification code'; // 사용자가 입력한 인증 코드
 
-	// 이미 가입된 사용자인지 확인합니다.
-	const isExist:boolean = await isExistUser(email)
-	if (isExist === true) {
-		console.error(`${email} is already exist user \n`)
-		return
-	}
+  // 이미 가입된 사용자인지 확인합니다.
+  const isExist: boolean = await isExistUser(email);
+  if (isExist === true) {
+    console.error(`${email} is already exist user \n`);
+    return;
+  }
 
-	console.log(`${email} is not exist\n`)
+  console.log(`${email} is not exist\n`);
 
-	// 이메일로 인증 코드를 전송합니다.
-	sendVerificationCode(email, "en")
-	console.log('verification code sent')
+  // 이메일로 인증 코드를 전송합니다.
+  sendVerificationCode(email, 'en');
+  console.log('verification code sent');
 
-	// 사용자가 입력한 인증 코드가 올바른지 확인합니다.
-	// 인증코드를 발송한 다음 사용자로부터 verification_code를 얻습니다.
-	const isValidCode = await verifyCode(email, verificationCode)
-	if (!isValidCode) {
-		console.error('invalid code', email, verificationCode)
-		return
-	}
+  // 사용자가 입력한 인증 코드가 올바른지 확인합니다.
+  // 인증코드를 발송한 다음 사용자로부터 verification_code를 얻습니다.
+  const isValidCode = await verifyCode(email, verificationCode);
+  if (!isValidCode) {
+    console.error('invalid code', email, verificationCode);
+    return;
+  }
 
-	// 사용자의 비밀번호를 암호화합니다.
-	const secureChannelRes = await createSecureChannel()
-	const encryptedPassword = encrypt(secureChannelRes, password)
+  // 사용자의 비밀번호를 암호화합니다.
+  const secureChannelRes = await createSecureChannel();
+  const encryptedPassword = encrypt(secureChannelRes, password);
 
-	// 사용자의 동의를 받습니다.
-	const overage = 1
-	const agree = 1
-	const collect = 1
-	const thirdParty = 1
-	const adverise = 1
+  // 사용자의 동의를 받습니다.
+  const overage = 1;
+  const agree = 1;
+  const collect = 1;
+  const thirdParty = 1;
+  const adverise = 1;
 
-	// Client ID / Client Secret
-	const auth = Buffer.from(`${clientID}:${clientSecret}`).toString('base64');
+  // Client ID / Client Secret
+  const auth = Buffer.from(`${clientID}:${clientSecret}`).toString('base64');
 
-	// 사용자를 등록합니다.
-	await registerEmailUser(email, encryptedPassword, verificationCode, secureChannelRes.ChannelID, auth, overage, agree, collect, thirdParty, adverise)
-	console.log('success signup')
+  // 사용자를 등록합니다.
+  await registerEmailUser(
+    email,
+    encryptedPassword,
+    verificationCode,
+    secureChannelRes.ChannelID,
+    auth,
+    overage,
+    agree,
+    collect,
+    thirdParty,
+    adverise,
+  );
+  console.log('success signup');
 
-	const existResult = await isExistUser(email)
-	console.log(`${email} is exist: ${existResult}\n`)
+  const existResult = await isExistUser(email);
+  console.log(`${email} is exist: ${existResult}\n`);
 }
