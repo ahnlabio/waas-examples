@@ -1,3 +1,4 @@
+// securechannel.ts - WAAS Secure Channel API 사용 예제
 import crypto from 'crypto';
 import CryptoJS from 'crypto-js';
 import axios from 'axios';

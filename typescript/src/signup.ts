@@ -1,3 +1,4 @@
+// signup.ts - WAAS 회원 가입 API 사용 예제
 import axios, { HttpStatusCode } from 'axios';
 import qs from 'qs';
 import { createSecureChannel, encrypt } from './secureChannel'; // (1)
