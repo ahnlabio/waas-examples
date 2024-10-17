@@ -208,10 +208,10 @@ async function verifyCode(email: string, code: string): Promise<boolean> {
 }
 
 export async function signupScenario() {
-  const email: string = 'conan@ahnlab.io'; // 사용자 이메일
-  const password: string = 'conantest'; // 사용자 비밀번호
-  const clientID: string = 'dyNztnxA4FR8C5reoE2R0D'; // 발급받은 Client ID
-  const clientSecret: string = '53DVTyixQEHa3FOfMLmzWFc1VktWSHASz9Svq6eIV7eG'; // 발급받은 Client Secret
+  const email: string = 'email@email.com'; // 사용자 이메일
+  const password: string = 'password'; // 사용자 비밀번호
+  const clientID: string = 'client id'; // 발급받은 Client ID
+  const clientSecret: string = 'client secret'; // 발급받은 Client Secret
   const verificationCode: string = 'verification code'; // 사용자가 입력한 인증 코드
 
   // 이미 가입된 사용자인지 확인합니다.
