@@ -1,4 +1,4 @@
-import axios, { formToJSON, HttpStatusCode } from 'axios';
+import axios, { HttpStatusCode } from 'axios';
 import qs from 'qs';
 import { createSecureChannel, encrypt } from './secureChannel';
 
@@ -37,8 +37,14 @@ async function isExistUser(email: string): Promise<boolean> {
   try {
     const urlStr = `${getBaseURL()}/member/user-management/users/${email}?serviceid=https://mw.myabcwallet.com`;
     const response = await axios.get(urlStr);
-    return response.status !== 200;
-  } catch (e) {
+    return true;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === HttpStatusCode.BadRequest) {
+        return false;
+      }
+    }
+
     throw new Error(`fail to is exist user check`);
   }
 }
@@ -92,14 +98,14 @@ async function registerEmailUser(
         'Secure-Channel': `${channelID}`,
       },
     });
-
-    if (response.status !== HttpStatusCode.Ok) {
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
       throw new Error(
-        `fail to register email user, status code: ${response.status}`,
+        `fail to register email user, status code: ${error.status}`,
       );
     }
-  } catch (e) {
-    console.error(`fail to register email user`);
+
+    throw new Error(`fail to register email user`);
   }
 }
 
@@ -166,13 +172,13 @@ async function sendCode(email: string, lang: string, template: verifyCodeType) {
     url.searchParams.append('lang', lang);
     url.searchParams.append('template', template);
 
-    const response = await axios.get(url.toString());
-
-    if (response.status !== 200) {
-      throw new Error(`Request failed with status code ${response.status}`);
-    }
+    await axios.get(url.toString());
   } catch (error) {
-    console.error(`fail to send code`);
+    if (axios.isAxiosError(error)) {
+      throw new Error(`fail to send code: ${error.response?.status}`);
+    }
+
+    throw new Error(`fail to send code`);
   }
 }
 
@@ -201,8 +207,12 @@ async function verifyCode(email: string, code: string): Promise<boolean> {
     });
 
     const response = await axios.post(urlStr, formData);
-    return response.status === HttpStatusCode.Ok;
-  } catch (e) {
+    return true;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`fail to verify code: ${error.response?.status}`);
+    }
+
     throw new Error(`fail to verify code`);
   }
 }
