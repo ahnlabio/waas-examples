@@ -1,6 +1,6 @@
 import axios, { HttpStatusCode } from 'axios';
 import qs from 'qs';
-import { createSecureChannel, encrypt } from './secureChannel';
+import { createSecureChannel, encrypt } from './secureChannel'; // (1)
 
 /*
 	해당 예제는 정상동작하는 상황을 가정하고, 에러 처리를 따로하지 않음
@@ -37,11 +37,11 @@ async function isExistUser(email: string): Promise<boolean> {
   try {
     const urlStr = `${getBaseURL()}/member/user-management/users/${email}?serviceid=https://mw.myabcwallet.com`;
     const response = await axios.get(urlStr);
-    return true;
+    return false;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      if (error.response?.status === HttpStatusCode.BadRequest) {
-        return false;
+      if (error.response?.data['code'] == 606) {
+        return true;
       }
     }
 
@@ -101,7 +101,9 @@ async function registerEmailUser(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        `fail to register email user, status code: ${error.status}`,
+        `fail to register email user, status code: ${
+          error.status
+        }, data: ${JSON.stringify(error.response?.data)}`,
       );
     }
 
@@ -175,7 +177,11 @@ async function sendCode(email: string, lang: string, template: verifyCodeType) {
     await axios.get(url.toString());
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`fail to send code: ${error.response?.status}`);
+      throw new Error(
+        `fail to send code: ${error.response?.status}, data: ${JSON.stringify(
+          error.response?.data,
+        )}`,
+      );
     }
 
     throw new Error(`fail to send code`);
@@ -210,7 +216,11 @@ async function verifyCode(email: string, code: string): Promise<boolean> {
     return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`fail to verify code: ${error.response?.status}`);
+      throw new Error(
+        `fail to verify code: ${error.response?.status}, data: ${JSON.stringify(
+          error.response?.data,
+        )}`,
+      );
     }
 
     throw new Error(`fail to verify code`);
@@ -257,7 +267,7 @@ export async function signupScenario() {
   const adverise = 1;
 
   // Client ID / Client Secret
-  const auth = Buffer.from(`${clientID}:${clientSecret}`).toString('base64');
+  const auth = Buffer.from(`${clientID}:${clientSecret}`).toString('base64'); // (2)
 
   // 사용자를 등록합니다.
   await registerEmailUser(
@@ -277,3 +287,8 @@ export async function signupScenario() {
   const existResult = await isExistUser(email);
   console.log(`${email} is exist: ${existResult}\n`);
 }
+
+/*
+1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_1))
+2.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
+*/

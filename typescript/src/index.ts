@@ -1,3 +1,4 @@
+import { loginScenario } from './login.js';
 import { secureChannelScenario } from './secureChannel.js';
 import { signupScenario } from './signup.js';
 
@@ -7,8 +8,9 @@ async function tsTest() {
 
   console.log('==========start waas docs scenario==========');
 
-  // await secureChannelScenario();
+  await secureChannelScenario();
   await signupScenario();
+  await loginScenario();
 
   console.log('==========end waas docs scenario==========');
 }
