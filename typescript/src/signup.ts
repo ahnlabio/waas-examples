@@ -37,11 +37,11 @@ async function isExistUser(email: string): Promise<boolean> {
   try {
     const urlStr = `${getBaseURL()}/member/user-management/users/${email}?serviceid=https://mw.myabcwallet.com`;
     const response = await axios.get(urlStr);
-    return true;
+    return false;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      if (error.response?.status === HttpStatusCode.BadRequest) {
-        return false;
+      if (error.response?.data['code'] == 606) {
+        return true;
       }
     }
 
@@ -101,7 +101,9 @@ async function registerEmailUser(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        `fail to register email user, status code: ${error.status}`,
+        `fail to register email user, status code: ${
+          error.status
+        }, data: ${JSON.stringify(error.response?.data)}`,
       );
     }
 
@@ -175,7 +177,11 @@ async function sendCode(email: string, lang: string, template: verifyCodeType) {
     await axios.get(url.toString());
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`fail to send code: ${error.response?.status}`);
+      throw new Error(
+        `fail to send code: ${error.response?.status}, data: ${JSON.stringify(
+          error.response?.data,
+        )}`,
+      );
     }
 
     throw new Error(`fail to send code`);
@@ -210,7 +216,11 @@ async function verifyCode(email: string, code: string): Promise<boolean> {
     return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw new Error(`fail to verify code: ${error.response?.status}`);
+      throw new Error(
+        `fail to verify code: ${error.response?.status}, data: ${JSON.stringify(
+          error.response?.data,
+        )}`,
+      );
     }
 
     throw new Error(`fail to verify code`);

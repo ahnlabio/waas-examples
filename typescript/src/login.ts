@@ -54,7 +54,7 @@ async function emailLogin(
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Secure-Channel': secureChannelID,
-        Authorization: auth,
+        Authorization: `Basic ${auth}`,
       },
     });
 
@@ -69,7 +69,9 @@ async function emailLogin(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        `fail to email login. stataus code: ${error.response?.status}`,
+        `fail to email login. stataus code: ${
+          error.response?.status
+        }, data: ${JSON.stringify(error.response?.data)}`,
       );
     }
 
@@ -93,7 +95,7 @@ async function refreshToken(
 	*/
 
   try {
-    const urlStr = `${getBaseURL()}/auth/auth-service/v2/login`;
+    const urlStr = `${getBaseURL()}/auth/auth-service/v2/refresh`;
     const data = qs.stringify({
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
@@ -102,7 +104,7 @@ async function refreshToken(
     const response = await axios.post(urlStr, data, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: auth,
+        Authorization: `Basic ${auth}`,
       },
     });
 
@@ -117,7 +119,9 @@ async function refreshToken(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(
-        `fail to refresh token. stataus code: ${error.response?.status}`,
+        `fail to refresh token. stataus code: ${
+          error.status
+        }, data: ${JSON.stringify(error.response?.data)}`,
       );
     }
 
@@ -238,6 +242,8 @@ export async function loginScenario() {
 
   // Client ID / Client Secret
   const auth = Buffer.from(`${clientID}:${clientSecret}`).toString('base64'); // (2)
+
+  console.log(auth);
 
   // 로그인
   const loginResult = await emailLogin(
