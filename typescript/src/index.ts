@@ -9,9 +9,9 @@ async function tsTest() {
 
   console.log('==========start waas docs scenario==========');
 
-  // await secureChannelScenario();
-  // await signupScenario();
-  // await loginScenario();
+  await secureChannelScenario();
+  await signupScenario();
+  await loginScenario();
   await mpcScenario();
 
   console.log('==========end waas docs scenario==========');
