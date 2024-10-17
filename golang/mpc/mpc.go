@@ -56,14 +56,6 @@ type WalletInfo struct {
 	TwoFactorFreezeEndTime     int             `json:"twoFactorFreezeEndTime"`
 }
 
-type GetWalletResult struct {
-	UID                   string `json:"uid"`
-	WID                   int    `json:"wid"`
-	SID                   string `json:"sid"`
-	Pvencstr              string `json:"pvencstr"`
-	EncryptDevicePassword string `json:"encryptDevicePassword"`
-}
-
 func GetWalletInfo(accessToken string) WalletInfo {
 	/*
 		사용자 MPC 지갑을 조회합니다.
@@ -122,6 +114,14 @@ func GetWalletInfo(accessToken string) WalletInfo {
 	}
 
 	return result
+}
+
+type GetWalletResult struct {
+	UID                   string `json:"uid"`
+	WID                   int    `json:"wid"`
+	SID                   string `json:"sid"`
+	Pvencstr              string `json:"pvencstr"`
+	EncryptDevicePassword string `json:"encryptDevicePassword"`
 }
 
 func GetWallet(email, encryptedDevicePassowrd, channelID, accessToken string) GetWalletResult {

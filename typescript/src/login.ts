@@ -21,7 +21,7 @@ type emailLoginResult = {
   expiredIn: string;
 };
 
-async function emailLogin(
+export async function emailLogin(
   email: string,
   encryptedPassword: string,
   secureChannelID: string,
@@ -243,8 +243,6 @@ export async function loginScenario() {
 
   // Client ID / Client Secret
   const auth = Buffer.from(`${clientID}:${clientSecret}`).toString('base64'); // (2)
-
-  console.log(auth);
 
   // 로그인
   const loginResult = await emailLogin(

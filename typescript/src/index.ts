@@ -1,6 +1,7 @@
 import { loginScenario } from './login.js';
 import { secureChannelScenario } from './secureChannel.js';
 import { signupScenario } from './signup.js';
+import { mpcScenario } from './mpc.js';
 
 async function tsTest() {
   const greeting: string = 'Hello, Typescript';
@@ -11,6 +12,7 @@ async function tsTest() {
   await secureChannelScenario();
   await signupScenario();
   await loginScenario();
+  await mpcScenario();
 
   console.log('==========end waas docs scenario==========');
 }
