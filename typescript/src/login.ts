@@ -1,5 +1,5 @@
 // login.ts - WAAS 로그인 API 사용 예제
-import axios, { HttpStatusCode } from 'axios';
+import axios from 'axios';
 import jwt, { JwtHeader, JwtPayload } from 'jsonwebtoken';
 import qs from 'qs';
 import { createSecureChannel, encrypt } from './secureChannel'; // (1)
@@ -7,6 +7,12 @@ import { createSecureChannel, encrypt } from './secureChannel'; // (1)
 /*
 	해당 예제는 정상동작하는 상황을 가정하고, 에러 처리를 따로하지 않음
 	구현시에 에러 및 예외처리 적용 필요
+	ts를 js로 빌드하여, dist파일을 실행하도록 package.json설정하여 작성된 예제 package.json 파일 참고
+	``` json
+		"scripts": {
+			"start": "tsc | node dist/index.js",
+		},
+	```
 */
 const WAAS_BASE_URL: string = 'https://dev-api.waas.myabcwallet.com';
 function getBaseURL(): string {
@@ -28,19 +34,19 @@ export async function emailLogin(
   auth: string,
 ): Promise<emailLoginResult> {
   /*
-	   이메일과 암호를 사용하여 로그인 요청을 보냅니다.
+		이메일과 암호를 사용하여 로그인 요청을 보냅니다.
 
-	   Args:
-	       email (str): 사용자의 이메일 주소.
-	       encrypted_password (str): 암호화된 사용자 비밀번호. secure channel 로 암호화 되어야 합니다.
-	       secure_channel_id (str): 보안 채널 ID.
-	       auth (str): 인코딩된 인증 정보. 발급받은 Client ID 와 Client Secret 을 base64 로 인코딩한 값입니다.
+		Args:
+				email (str): 사용자의 이메일 주소.
+				encrypted_password (str): 암호화된 사용자 비밀번호. secure channel 로 암호화 되어야 합니다.
+				secure_channel_id (str): 보안 채널 ID.
+				auth (str): 인코딩된 인증 정보. 발급받은 Client ID 와 Client Secret 을 base64 로 인코딩한 값입니다.
 
-	   Returns:
-	       emailLoginResult: 로그인 요청에 대한 서버의 응답.
+		Returns:
+				emailLoginResult: 로그인 요청에 대한 서버의 응답.
 
-	   Raises:
-	       HTTPError: 로그인 요청이 실패한 경우.
+		Raises:
+				HTTPError: 로그인 요청이 실패한 경우.
 	*/
   try {
     const urlStr = `${getBaseURL()}/auth/auth-service/v2/login`;
@@ -88,11 +94,11 @@ async function refreshToken(
 		refresh token 을 사용하여 access token 을 재발급합니다.
 
 		Args:
-		    refresh_token (str): refresh token.
-		    auth (str): 인코딩된 인증 정보. 발급받은 Client ID 와 Client Secret 을 base64 로 인코딩한 값입니다.
-
+				refresh_token (str): refresh token.
+				auth (str): 인코딩된 인증 정보. 발급받은 Client ID 와 Client Secret 을 base64 로 인코딩한 값입니다.
+	
 		Returns:
-		    emailLoginResult: 재발급된 access token.
+				emailLoginResult: 재발급된 access token.
 	*/
 
   try {
