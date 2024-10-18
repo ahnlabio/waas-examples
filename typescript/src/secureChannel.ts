@@ -1,4 +1,5 @@
 // securechannel.ts - WAAS Secure Channel API 사용 예제
+
 import axios from 'axios';
 import crypto from 'crypto';
 import CryptoJS from 'crypto-js';
@@ -176,18 +177,18 @@ function getAESCipher(
 export async function secureChannelScenario() {
   // Secure channel 생성
   const secureChannelRes: secureChannel = await createSecureChannel();
-  console.log('Secure Channel 생성 완료\n', secureChannelRes);
+  console.log(`Secure Channel 생성 완료 : ${secureChannelRes}`);
 
   // Secure Channel 검증
   const verifyResult: boolean = verifySecureChannel(secureChannelRes);
-  console.log(`Secure Channel Verify Result: ${verifyResult}\n`); // true 예상
+  console.log(`Secure Channel Verify Result: ${verifyResult}`); // true 예상
 
   // Secure Channel 을 사용한 메시지 암복호화
   const message: string = 'hello, waas';
   const encryptedMessage: string = encrypt(secureChannelRes, message);
   const decryptedMessage: string = decrypt(secureChannelRes, encryptedMessage);
 
-  console.log(`message encrypt result: ${message === decryptedMessage}\n`); // true 예상
+  console.log(`message encrypt result: ${message === decryptedMessage}`); // true 예상
 }
 
 /*

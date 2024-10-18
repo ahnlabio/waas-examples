@@ -2,8 +2,8 @@
 
 import axios from 'axios';
 import qs from 'qs';
-import { emailLogin } from './login';
-import { createSecureChannel, encrypt } from './secureChannel';
+import { emailLogin } from './login'; // (2)
+import { createSecureChannel, encrypt } from './secureChannel'; // (3)
 
 /*
 	해당 예제는 정상동작하는 상황을 가정하고, 에러 처리를 따로하지 않음

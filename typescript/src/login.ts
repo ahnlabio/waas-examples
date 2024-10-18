@@ -15,7 +15,10 @@ import { createSecureChannel, encrypt } from './secureChannel'; // (1)
 		},
 	```
 */
+
 const WAAS_BASE_URL: string = 'https://dev-api.waas.myabcwallet.com';
+
+// 필수 함수 아님. 유틸성 함수
 function getBaseURL(): string {
   const waas_base_url: string = process.env.WAAS_BASE_URL || WAAS_BASE_URL;
   return waas_base_url;
