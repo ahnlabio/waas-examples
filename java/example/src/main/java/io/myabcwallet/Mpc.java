@@ -262,8 +262,8 @@ public class Mpc {
     }
 
     /*
-    1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_2))
-    2.  :man_raising_hand: Getting Started > Login 참고 ([getting-started/guide/login/](login.md#__tabbed_1_2))
+    1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_4))
+    2.  :man_raising_hand: Getting Started > Login 참고 ([getting-started/guide/login/](login.md#__tabbed_1_4))
     3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
     4.  :man_raising_hand: devicePassword 는 키 조각 암호화를 위해 사용됩니다. Secure Channel 암호화가 필요합니다.
     */
