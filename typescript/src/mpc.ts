@@ -1,4 +1,5 @@
 // mpc.ts = WAAS 지갑 생성/복구 API 사용 예제
+
 import axios from 'axios';
 import qs from 'qs';
 import { emailLogin } from './login';
@@ -7,14 +8,18 @@ import { createSecureChannel, encrypt } from './secureChannel';
 /*
 	해당 예제는 정상동작하는 상황을 가정하고, 에러 처리를 따로하지 않음
 	구현시에 에러 및 예외처리 적용 필요
-  ts를 js로 빌드하여, dist파일을 실행하도록 package.json설정하여 작성된 예제 package.json 파일 참고
+  ts를 js로 빌드하여, dist파일을 실행하도록 package.json설정하여 작성된 예제 
+  package.json 에 해당 스크립트 참고
   ``` json
     "scripts": {
       "start": "tsc | node dist/index.js",
     },
   ```
 */
+
 const WAAS_BASE_URL: string = 'https://dev-api.waas.myabcwallet.com';
+
+// 필수 함수 아님. 유틸성 함수
 function getBaseURL(): string {
   const waas_base_url: string = process.env.WAAS_BASE_URL || WAAS_BASE_URL;
   return waas_base_url;
