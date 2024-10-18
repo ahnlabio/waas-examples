@@ -253,7 +253,7 @@ export async function signupScenario() {
     return;
   }
 
-  console.log(`${email} is not exist\n`);
+  console.log(`${email} is not exist`);
 
   // 이메일로 인증 코드를 전송합니다.
   sendVerificationCode(email, 'en');
@@ -297,7 +297,7 @@ export async function signupScenario() {
   console.log('success signup');
 
   const existResult = await isExistUser(email);
-  console.log(`${email} is exist: ${existResult}\n`);
+  console.log(`${email} is exist: ${existResult}`);
 }
 
 /*
