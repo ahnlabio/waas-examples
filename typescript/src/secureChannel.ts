@@ -1,12 +1,18 @@
 // securechannel.ts - WAAS Secure Channel API 사용 예제
+import axios from 'axios';
 import crypto from 'crypto';
 import CryptoJS from 'crypto-js';
-import axios from 'axios';
 import qs from 'qs';
 
 /*
 	해당 예제는 정상동작하는 상황을 가정하고, 에러 처리를 따로하지 않음
 	구현시에 에러 및 예외처리 적용 필요
+  ts를 js로 빌드하여, dist파일을 실행하도록 package.json설정하여 작성된 예제 package.json 파일 참고
+  ``` json
+    "scripts": {
+      "start": "tsc | node dist/index.js",
+    },
+  ```
 */
 const WAAS_BASE_URL: string = 'https://dev-api.waas.myabcwallet.com';
 function getBaseURL(): string {
@@ -29,25 +35,25 @@ interface keyPair {
 
 export async function createSecureChannel(): Promise<secureChannel> {
   /*
-        생성된 공개 키와 보안 채널 메시지를 사용하여 보안 채널을 생성합니다.
+    생성된 공개 키와 보안 채널 메시지를 사용하여 보안 채널을 생성합니다.
 
-        `WAAS_BASE_URL` 환경 변수를 사용하여 WAAS API 서버의 기본 URL을 설정할 수 있습니다.
+    `WAAS_BASE_URL` 환경 변수를 사용하여 WAAS API 서버의 기본 URL을 설정할 수 있습니다.
 
-        Dev : https://dev-api.waas.myabcwallet.com
-        Production : https://api.waas.myabcwallet.com
+    Dev : https://dev-api.waas.myabcwallet.com
+    Production : https://api.waas.myabcwallet.com
 
-        참고:
-        https://docs.waas.myabcwallet.com/ko/getting-started/guide/secure-channel/
+    참고:
+    https://docs.waas.myabcwallet.com/ko/getting-started/guide/secure-channel/
 
-        Args:
-            secure_channel_message (str): 요청에 사용되는 plain 은 채널 생성 확인을 위한 임시 문자열
+    Args:
+        secure_channel_message (str): 요청에 사용되는 plain 은 채널 생성 확인을 위한 임시 문자열
 
-        Returns:
-            SecureChannel: 보안 채널 데이터.
+    Returns:
+        SecureChannel: 보안 채널 데이터.
 
-        Raises:
-            HTTPError: 보안 채널 생성 요청이 실패한 경우.
-    */
+    Raises:
+        HTTPError: 보안 채널 생성 요청이 실패한 경우.
+  */
 
   try {
     const keyPair = createKeypair();
