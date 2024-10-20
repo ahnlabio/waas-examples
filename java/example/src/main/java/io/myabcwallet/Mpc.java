@@ -62,76 +62,6 @@ public class Mpc {
         return (T) gson.fromJson(message, classOfT);
     }
 
-    public WalletInfo getWalletInfo(String acessToken) throws Exception {
-        /*
-         * 사용자 MPC 지갑을 조회합니다.
-         *
-         * Args:
-         *   access_token (str): 지갑 사용자의 JWT Token
-         *
-         * WalletInfo example:
-         * >>> {
-         *     "_id": "657bdc790b67b600128a865f",
-         *     "uid": "d5b440b8-469b-4e16-8978-d78b73a09c4e",
-         *     "wid": 6,
-         *     "email": "test_0@myabcwallet.com",
-         *     "accounts": [
-         *         {
-         *         "id": "0",
-         *         "sid": "0xbE616d5b24903efc58149f3c7511FeC2085c176e",
-         *         "ethAddress": "0xbE616d5b24903efc58149f3c7511FeC2085c176e",
-         *         "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4Hs....",
-         *         "name": "Account 1",
-         *         "signer": "mpc",
-         *         "pubkey": "0x025c5d89f60eba1b8fc5c2bd2fa28eefe48f4c950815acd7...."
-         *         }
-         *    ],
-         *    "favorites": [],
-         *    "autoconfirms": [],
-         *    "twoFactorEnabled": false,
-         *    "twoFactorResetRetryCount": 0,
-         *    "twoFactorRetryFreezeEndTime": 0,
-         *    "twoFactorFreezeEndTime": 0
-         *  }
-         */
-        
-        URL url = new URL(WAAS_BASE_URL + "/wapi/v2/mpc/wallets/info");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        BufferedReader buffer = null;
-
-        try {
-            connection.setDoOutput(true);
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("charset", "utf-8");
-            connection.setRequestProperty("Authorization", "Bearer " + acessToken);
-
-            buffer = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-            StringBuffer stringBuffer = new StringBuffer();
-            String line = null;
-            
-            while ((line = buffer.readLine()) != null) {
-                stringBuffer.append(line);
-            }
-            
-            String response = stringBuffer.toString();
-
-            int responseCode = connection.getResponseCode();
-            if(responseCode != 200) {
-                throw new Exception(String.format("get wallet info failed: [%d][%s]", responseCode, response));
-            }
-
-            return build(response, WalletInfo.class);
-        }
-        catch(Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-        finally {
-            if(buffer != null) buffer.close();
-        }
-    }
-
     public GetWalletResult getWallet(String email, String encDevicePassword, String channelId, String accessToken) throws Exception {
         /*
         사용자 고유 MPC 지갑을 생성합니다.
@@ -211,6 +141,75 @@ public class Mpc {
         }
     }
 
+    public WalletInfo getWalletInfo(String acessToken) throws Exception {
+        /*
+        사용자 MPC 지갑을 조회합니다.
+        
+        Args:
+            access_token (str): 지갑 사용자의 JWT Token
+        
+        WalletInfo example:
+        >>> {
+            "_id": "657bdc790b67b600128a865f",
+            "uid": "d5b440b8-469b-4e16-8978-d78b73a09c4e",
+            "wid": 6,
+            "email": "test_0@myabcwallet.com",
+            "accounts": [
+                {
+                "id": "0",
+                "sid": "0xbE616d5b24903efc58149f3c7511FeC2085c176e",
+                "ethAddress": "0xbE616d5b24903efc58149f3c7511FeC2085c176e",
+                "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4Hs....",
+                "name": "Account 1",
+                "signer": "mpc",
+                "pubkey": "0x025c5d89f60eba1b8fc5c2bd2fa28eefe48f4c950815acd7...."
+                }
+            ],
+            "favorites": [],
+            "autoconfirms": [],
+            "twoFactorEnabled": false,
+            "twoFactorResetRetryCount": 0,
+            "twoFactorRetryFreezeEndTime": 0,
+            "twoFactorFreezeEndTime": 0
+        }
+        */
+        
+        URL url = new URL(WAAS_BASE_URL + "/wapi/v2/mpc/wallets/info");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        BufferedReader buffer = null;
+
+        try {
+            connection.setDoOutput(true);
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("charset", "utf-8");
+            connection.setRequestProperty("Authorization", "Bearer " + acessToken);
+
+            buffer = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+            StringBuffer stringBuffer = new StringBuffer();
+            String line = null;
+            
+            while ((line = buffer.readLine()) != null) {
+                stringBuffer.append(line);
+            }
+            
+            String response = stringBuffer.toString();
+
+            int responseCode = connection.getResponseCode();
+            if(responseCode != 200) {
+                throw new Exception(String.format("get wallet info failed: [%d][%s]", responseCode, response));
+            }
+
+            return build(response, WalletInfo.class);
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+        finally {
+            if(buffer != null) buffer.close();
+        }
+    }
     public static void main(String[] args) throws Exception {
         String email = "test01@ahnlab.com";  // 사용자 이메일
         String password = "0123456789";  // 사용자 비밀번호
@@ -263,8 +262,8 @@ public class Mpc {
     }
 
     /*
-    1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_2))
-    2.  :man_raising_hand: Getting Started > Login 참고 ([getting-started/guide/login/](login.md#__tabbed_1_2))
+    1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/secure-channel/](secure-channel.md#__tabbed_1_4))
+    2.  :man_raising_hand: Getting Started > Login 참고 ([getting-started/guide/login/](login.md#__tabbed_1_4))
     3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
     4.  :man_raising_hand: devicePassword 는 키 조각 암호화를 위해 사용됩니다. Secure Channel 암호화가 필요합니다.
     */

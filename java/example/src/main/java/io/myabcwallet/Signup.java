@@ -18,26 +18,26 @@ public class Signup {
 
     public boolean isExistUser(String email) throws Exception {
         /*
-         * 주어진 사용자 이메일이 이미 가입된 사용자 인지 확인합니다.
-         * 
-         * Args:
-         *      email (str): 확인할 사용자의 이메일 주소.
-         * 
-         * Returns:
-         *      bool: 이미 존재하는 계정인 경우 True, 가입되지 않은 계정인 경우 False.
-         * 
-         * Raises:
-         *      HTTPError: 요청이 실패한 경우.
-         * 
-         * Note:
-         *      이미 가입된 이메일인 경우, 서버는 상태 코드 400과 함께 다음과 같은 응답을 반환합니다:
-         *      {
-         *          "code": 606,
-         *          "msg": "Email is already in use.",
-         *          "object": null,
-         *          "errorResponse": "{\"code\":606,\"msg\":\"Email is already in use.\"}"
-         *      }
-         */
+        주어진 사용자 이메일이 이미 가입된 사용자 인지 확인합니다.
+        
+        Args:
+            email (str): 확인할 사용자의 이메일 주소.
+        
+        Returns:
+            bool: 이미 존재하는 계정인 경우 True, 가입되지 않은 계정인 경우 False.
+        
+        Raises:
+            HTTPError: 요청이 실패한 경우.
+        
+        Note:
+            이미 가입된 이메일인 경우, 서버는 상태 코드 400과 함께 다음과 같은 응답을 반환합니다:
+            {
+                "code": 606,
+                "msg": "Email is already in use.",
+                "object": null,
+                "errorResponse": "{\"code\":606,\"msg\":\"Email is already in use.\"}"
+            }
+        */
         URL url = new URL(WAAS_BASE_URL + "/member/user-management/users/" + email + "?serviceid=" + SERVICE_ID);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
@@ -53,21 +53,21 @@ public class Signup {
     public int registerEmailUser(String email, String encPassword, String verificationCode, String channelId, String auth,
                 int overage, int agree, int collect, int thridParty, int adverties) throws Exception {
         /*
-         * 회원 가입
-         * 성공시 오류 없이 종료
-         * 
-         * Args:
-         *      email (str): 사용자 이메일
-         *      encrypted_password (str): 암호화된 사용자 비밀번호. secure channel 로 암호화 되어야 합니다.
-         *      verification_code (str): 인증 코드. 이메일로 전송된 인증 코드를 입력합니다.
-         *      channel_id (str): 보안 채널 ID.  # (2)
-         *      auth (str): 인코딩된 인증 정보. 발급받은 Client ID 와 Client Secret 을 base64 로 인코딩한 값입니다.
-         *      overage (int): 14세 이상 사용자 동의
-         *      agree (int): 서비스 이용 약관 동의
-         *      collect (int): 개인정보 수집 및 이용 동의
-         *      third_party (int): 제3자 정보 제공 동의
-         *      advertise (int): 광고성 정보 수신 동의
-         */
+        회원 가입
+        성공시 오류 없이 종료
+        
+        Args:
+            email (str): 사용자 이메일
+            encrypted_password (str): 암호화된 사용자 비밀번호. secure channel 로 암호화 되어야 합니다.
+            verification_code (str): 인증 코드. 이메일로 전송된 인증 코드를 입력합니다.
+            channel_id (str): 보안 채널 ID.  # (2)
+            auth (str): 인코딩된 인증 정보. 발급받은 Client ID 와 Client Secret 을 base64 로 인코딩한 값입니다.
+            overage (int): 14세 이상 사용자 동의
+            agree (int): 서비스 이용 약관 동의
+            collect (int): 개인정보 수집 및 이용 동의
+            third_party (int): 제3자 정보 제공 동의
+            advertise (int): 광고성 정보 수신 동의
+        */
         URL url = new URL(WAAS_BASE_URL + "/member/user-management/users/v2/adduser");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -125,67 +125,67 @@ public class Signup {
 
     public int sendVerificationCode(String email, String lang) throws Exception {
         /*
-         * 사용자 이메일로 인증 코드를 전송합니다.
-         *
-         *   성공하면 함수는 오류 없이 종료
-         *
-         *  Args:
-         *      email (str): 인증 코드를 전송할 사용자의 이메일 주소.
-         *      lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
-         *
-         *  Raises:
-         *       HTTPError: 요청이 실패한 경우.
-         */
+        사용자 이메일로 인증 코드를 전송합니다.
+        
+        성공하면 함수는 오류 없이 종료
+        
+        Args:
+            email (str): 인증 코드를 전송할 사용자의 이메일 주소.
+            lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
+        
+        Raises:
+            HTTPError: 요청이 실패한 경우.
+        */
         return sendCode(email, lang, "verify");
     }
 
     public int sendAuthCode(String email, String lang) throws Exception {
         /*
-         * 사용자 이메일로 패스워드 변경 인증 코드를 전송합니다.
-         * 성공하면 함수는 오류 없이 종료
-         * 
-         * Args:
-         *       email (str): 인증 코드를 전송할 사용자의 이메일 주소.
-         *       lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
-         *
-         * Raises:
-         *       HTTPError: 요청이 실패한 경우.
-         */
+        사용자 이메일로 패스워드 변경 인증 코드를 전송합니다.
+        성공하면 함수는 오류 없이 종료
+        
+        Args:
+            email (str): 인증 코드를 전송할 사용자의 이메일 주소.
+            lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
+        
+        Raises:
+            HTTPError: 요청이 실패한 경우.
+        */
         return sendCode(email, lang, "changepassword");
     }
 
     public int sendPasswordResetCode(String email, String lang) throws Exception {
         /*
-         * 사용자 이메일로 패스워드 초기화 인증 코드를 전송합니다.
-         *
-         *  성공하면 함수는 오류 없이 종료
-         *
-         *  Args:
-         *       email (str): 인증 코드를 전송할 사용자의 이메일 주소.
-         *     lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
-         *
-         *  Raises:
-         *      HTTPError: 요청이 실패한 경우.
-         */
+        사용자 이메일로 패스워드 초기화 인증 코드를 전송합니다.
+        
+        성공하면 함수는 오류 없이 종료
+        
+        Args:
+            email (str): 인증 코드를 전송할 사용자의 이메일 주소.
+            lang (Literal["ko", "en", "ja"], optional): 인증 코드의 언어 설정. Defaults to "en".
+        
+        Raises:
+            HTTPError: 요청이 실패한 경우.
+        */
         return sendCode(email, lang, "initpassword");
     }
 
     public boolean verifyCode(String email, String code) throws Exception {
         /*
-         * 사용자가 입력한 코드가 올바른지 확인합니다.
-         *
-         *  send_verification_code, send_auth_code, send_password_reset_code 함수로 전송된 코드를 확인합니다.
-         *
-         *  Args:
-         *      email (str): 사용자 이메일 주소.
-         *      code (str): 사용자가 입력한 코드.
-         *
-         *   Returns:
-         *       bool: 사용자가 입력한 코드가 올바른 경우 True, 그렇지 않은 경우 False.
-         *
-         *  Raises:
-         *      HTTPError: 요청이 실패한 경우.
-         */
+        사용자가 입력한 코드가 올바른지 확인합니다.
+        
+        send_verification_code, send_auth_code, send_password_reset_code 함수로 전송된 코드를 확인합니다.
+        
+        Args:
+            email (str): 사용자 이메일 주소.
+            code (str): 사용자가 입력한 코드.
+        
+        Returns:
+            bool: 사용자가 입력한 코드가 올바른 경우 True, 그렇지 않은 경우 False.
+        
+        Raises:
+            HTTPError: 요청이 실패한 경우.
+        */
         URL url = new URL(WAAS_BASE_URL + "/member/mail-service/" + email + "/verifycode");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -311,8 +311,7 @@ public class Signup {
     }
 
     /*
-     *  1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
-     *  2.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_2))
-     *  3.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
-     */
+    1.  :man_raising_hand: Getting Started > Secure Channel 참고 ([getting-started/guide/login/](secure-channel.md#__tabbed_1_4))
+    2.  :man_raising_hand: 사전에 발급받은 Client ID / Client Secret 이 필요합니다. Client ID 와 Client Secret 을 base64 로 인코딩 해야 합니다.
+    */
 }
